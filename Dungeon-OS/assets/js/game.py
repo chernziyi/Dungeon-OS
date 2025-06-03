@@ -97,6 +97,8 @@ targetables = []
 summonFaction = ""
 swarm = False
 
+statusStacksApplied = 0
+
 async def Main():
     setPosition("Choice.exe", "0px", "0px", "center")
     generateOSScreen(CallbackShop=Shop, CallbackBag=Bag, CallbackSave=generateSaveWindow,\
@@ -148,7 +150,57 @@ def addCharacter(idk):
             print("where?")
     
     setTimeout(create_proxy(addStatus), 0)
-            
+
+async def addEnemy(idk):
+    global enemyList, enemyNumber, swarm, summonFaction, allEntities
+
+    enemyData = enemyStats[enemyName.index(idk)]
+
+    enemyNumber += 1
+    swarm = False
+    summonFaction = "enemy"
+
+    enemy = enemyParty[enemyNumber]
+    enemy.load_from(enemyData)
+    enemyList.append(enemy)
+
+    for i in range(len(enemyList) - 1):
+        if enemyList[i].id == enemy.id:
+            if isinstance(enemy.id[-2], int):
+                enemy.id[-2] = enemy.id[-2] + 1
+            else:
+                enemy.id = f"{enemy.id} (1)"
+
+    for i in range(len(enemyData.traits)):
+        traitInfo = traitList[traitName.index(enemyData.traits[i][0])]
+        for j in traitInfo.info:
+            if j[0] == "onSummon":
+                traitEffect(enemyData, enemyData, traitInfo, j, "onSummon")
+    
+    if not swarm:
+        generateWindow(enemy, "enemy", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
+        screen = document.getElementById(enemy.id)
+        def addStatus():
+            statusButton = screen.querySelector("#button2")
+            statusButton.innerHTML = "i"
+
+            if statusButton:
+                def onClick(event=None):
+                    print("hi")
+                    generateStatusWindow(next((s for s in enemyList if s.id == enemy.id)), "enemy")
+                
+                proxyClickStatus = create_proxy(onClick)
+                statusButton.addEventListener("click", proxyClickStatus)
+            else:
+                print("where?")
+        
+        setTimeout(create_proxy(addStatus), 0)
+    else:
+        enemyNumber -= 1
+        enemyList.remove(enemy)
+
+    updateHp(next((s for s in enemyList if s.id == enemyData.id), None), 0)
+
 async def Hallway():
     global state, roomNumber
 
@@ -175,7 +227,7 @@ async def startOfCombat():
     for i in partyList + enemyList + summonList:
         for j in i.traits:
             trait = traitList[traitName.index(j[0])]
-            if trait.secondaryText == "usesPerTurn" or "usesPerCombat":
+            if trait.secondaryText == "usesPerTurn" or trait.secondaryText == "usesPerCombat":
                 applyStatus(i, i, f"{trait.id}: Uses", j[1], 0, "", "", False)
 
 async def endOfCombat():
@@ -408,8 +460,8 @@ async def StartOfTurn(user):
             applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False)
 
 def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition):
-    trait = actualTrait.copy()
-    traitInfo = actualTraitInfo.copy()
+    trait = copy.deepcopy(actualTrait)
+    traitInfo = copy.deepcopy(actualTraitInfo)
     triggerSuccess = True
     if "triggerChance" in traitInfo:
         if random.uniform(0, 1) >= traitInfo[traitInfo.index("triggerChance") + 1]:
@@ -417,7 +469,7 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition):
         else:
             triggerSuccess = False
     
-    if trait.secondaryText == "usesPerTurn" or "usesPerCombat":
+    if trait.secondaryText == "usesPerTurn" or trait.secondaryText == "usesPerCombat":
         if next((s for s in user.status if s[0] == f"{trait.id}: Uses"), [0, 0, 0])[1] > 0:
             applyStatus(user, user, f"{trait.id}: Uses", 0, -1, "", "", False)
             triggerSuccess = True
@@ -567,7 +619,7 @@ def skillEffect(user, target, skillInfo, AOE):
         updateJuice(user, -skillInfo.juiceCost)
     
     for i in range(len(user.traits)):
-        traitInfo = traitList[traitName.index(user.traits[i][0])].copy()
+        traitInfo = copy.deepcopy(traitList[traitName.index(user.traits[i][0])])
         for j in traitInfo.info:
             if [0] == "beforeSkillUse":
                 if j[4] == skillInfo.id or "any":
@@ -632,25 +684,25 @@ def Effect(user, target, name, info, cost):
                 violet = 2
             else:
                 violet = 1
-            if info[info.index("damage") + 1] in ["fixed", "max"]:
-                damage = math.ceil(info[info.index("damage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+            if info[i + 1] in ["fixed", "max"]:
+                damage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                 * violet)
             else:
                 penetration = next((s for s in user.specialStats if s[0] == "penetration"), [0, 0, 0])[1]
                 if penetration >= 1:
                     penetration = 1
 
-                if info[info.index("damage") + 1] == "str":
+                if info[i + 1] == "str":
                     damage = user.strength
-                elif info[info.index("damage") + 1] == "spd":
+                elif info[i + 1] == "spd":
                     damage = user.speed
-                elif info[info.index("damage") + 1] == "def":
+                elif info[i + 1] == "def":
                     damage = user.defense
-                elif info[info.index("damage") + 1] == "star":
+                elif info[i + 1] == "star":
                     damage = next((s for s in user.specialStats if s[0] == "STARS"), [0, 0, 0])[1]
 
-                damage = damage * info[info.index("damage") + 2] *\
-                (1 + random.uniform(-info[info.index("damage") + 3], info[info.index("damage") + 3])) *\
+                damage = damage * info[i + 2] *\
+                (1 + random.uniform(-info[i + 3], info[i + 3])) *\
                 (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet -\
                 target.defense * (1 - penetration)
 
@@ -658,7 +710,7 @@ def Effect(user, target, name, info, cost):
                 damage = 1
             damage = math.ceil(damage)
             hurt(user, target, damage)
-            if info[info.index("damage") + 1] == "max":
+            if info[i + 1] == "max":
                 target.maxhp -= damage
                 updateHp(target, 0)
 
@@ -685,25 +737,25 @@ def Effect(user, target, name, info, cost):
                 violet = 2
             else:
                 violet = 1
-            if info[info.index("selfDamage") + 1] in ["fixed", "max"]:
-                damage = math.ceil(info[info.index("selfDamage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+            if info[i + 1] in ["fixed", "max"]:
+                damage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                 * violet)
             else:
                 penetration = next((s for s in user.specialStats if s[0] == "penetration"), [0, 0, 0])[1]
                 if penetration >= 1:
                     penetration = 1
 
-                if info[info.index("selfDamage") + 1] == "str":
+                if info[i + 1] == "str":
                     damage = user.strength
-                elif info[info.index("selfDamage") + 1] == "spd":
+                elif info[i + 1] == "spd":
                     damage = user.speed
-                elif info[info.index("selfDamage") + 1] == "def":
+                elif info[i + 1] == "def":
                     damage = user.defense
-                elif info[info.index("selfDamage") + 1] == "star":
+                elif info[i + 1] == "star":
                     damage = next((s for s in user.specialStats if s[0] == "STARS"), [0, 0, 0])[1]
 
-                damage = damage * info[info.index("selfDamage") + 2] *\
-                (1 + random.uniform(-info[info.index("selfDamage") + 3], info[info.index("selfDamage") + 3])) *\
+                damage = damage * info[i + 2] *\
+                (1 + random.uniform(-info[i + 3], info[i + 3])) *\
                 (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet -\
                 user.defense * (1 - penetration)
 
@@ -711,7 +763,7 @@ def Effect(user, target, name, info, cost):
                 damage = 1
             damage = math.ceil(damage)
             hurt(user, user, damage)
-            if info[info.index("selfDamage") + 1] == "max":
+            if info[i + 1] == "max":
                 user.maxhp -= damage
                 updateHp(user, 0)
 
@@ -720,15 +772,15 @@ def Effect(user, target, name, info, cost):
         if info[i] == "heal":
             info = updateInfo(info, i, 3, target, user)
             healBonus = next((s for s in user.specialStats if s[0] == "HEALBONUS"), [0, 0, 0])[1]
-            if info[info.index("heal") + 2] == "max":
-                target.maxhp += info[info.index("heal") + 1] + healBonus
+            if info[i + 2] == "max":
+                target.maxhp += info[i + 1] + healBonus
                 updateHp(target, 0)
-            heal(user, target, info[info.index("heal") + 1] + healBonus)
+            heal(user, target, info[i + 1] + healBonus)
         if info[i] == "die":
             hurt(user, user, user.hp)
         if info[i] == "ammo":
             info = updateInfo(info, i, 2, target, user)
-            applyStatus(user, user, "AMMO", 0, info[info.index("ammo") + 1], "", "-", False)
+            applyStatus(user, user, "AMMO", 0, info[i + 1], "", "-", False)
         if info[i] == "reload":
             Reload(user)
         if info[i] == "chant":
@@ -739,45 +791,42 @@ def Effect(user, target, name, info, cost):
                     for j in traitInfo.info:
                         if j[0] == "onChant":
                             traitEffect(user, user, traitInfo, j, "onChant")
-                applyStatus(user, user, "CHANT", 0, 0, info[info.index("chant") + 1], name, False)
+                applyStatus(user, user, "CHANT", 0, 0, info[i + 1], name, False)
                 break
             else:
                 skillCondition = "-"
         if info[i] == "summon":
-            addSummon(user, info[info.index("summon") + 1])
+            addSummon(user, info[i + 1])
         if info[i] == "drunk":
             info = updateInfo(info, i, 4, target, user)
-            if random.uniform(0, 1) + info[info.index("drunk") + 1] >= 1:
-                applyStatus(user, target, "DRUNK", info[info.index("drunk") + 2], info[info.index("drunk") + 3], info[info.index("drunk") + 4], "-", False)
+            if random.uniform(0, 1) + info[i + 1] >= 1:
+                applyStatus(user, target, "DRUNK", info[i + 2], info[i + 3], info[i + 4], "-", False)
         if info[i] == "bleed":
             info = updateInfo(info, i, 3, target, user)
-            if random.uniform(0, 1) + info[info.index("bleed") + 1] >= 1:
-                applyStatus(user, target, "BLEED", 0, info[info.index("bleed") + 2] + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+            if random.uniform(0, 1) + info[i + 1] >= 1:
+                applyStatus(user, target, "BLEED", 0, info[i + 2] + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
         if info[i] == "hemotoxin":
             info = updateInfo(info, i, 3, target, user)
-            if random.uniform(0, 1) + info[info.index("hemotoxin") + 1] >= 1:
-                applyStatus(user, target, "HEMOTOXIN", 0, info[info.index("hemotoxin") + 2], "", "-", False)
+            if random.uniform(0, 1) + info[i + 1] >= 1:
+                applyStatus(user, target, "HEMOTOXIN", 0, info[i + 2], "", "-", False)
         if info[i] == "plague":
             info = updateInfo(info, i, 3, target, user)
-            if random.uniform(0, 1) + info[info.index("plague") + 1] >= 1:
-                applyStatus(user, target, "PLAGUE", 0, info[info.index("plague") + 2], "", "-", False)
+            if random.uniform(0, 1) + info[i + 1] >= 1:
+                applyStatus(user, target, "PLAGUE", 0, info[i + 2], "", "-", False)
         if info[i] == "taunt":
             info = updateInfo(info, i, 3, target, user)
-            if random.uniform(0, 1) + info[info.index("taunt") + 1] >= 1:
-                applyStatus(user, target, "TAUNT", 0, info[info.index("taunt") + 2], "", user.id, False)
-        if info[i] == "stars":
-            info = updateInfo(info, i, 2, target, user)
-            applyStats(user, user, "STARS", info[info.index("stars") + 1])
+            if random.uniform(0, 1) + info[i + 1] >= 1:
+                applyStatus(user, target, "TAUNT", 0, info[i + 2], "", user.id, False)
         if info[i] == "stealth":
             info = updateInfo(info, i, 2, target, user)
-            applyStatus(user, target, "STEALTH", 1, 0, info[info.index("stealth") + 1], user.id, False)
+            applyStatus(user, target, "STEALTH", 1, 0, info[i + 1], user.id, False)
         if info[i] == "cantrip":
             if cantripUsed == False:
                 cantrip = True
                 cantripUsed = True
         if info[i] == "buffDuration":
             info = updateInfo(info, i, 2, target, user)
-            buffDuration = info[info.index("buffDuration") + 1]
+            buffDuration = info[i + 1]
         if info[i] == "infuse":
             buffDuration = "infuse"
             if isinstance (user, PlayerData):
@@ -803,25 +852,27 @@ def Effect(user, target, name, info, cost):
                     Buff(user, target, name, buffData, -next((s for s in target.status if s[0] == name), [0, 0, 0])[1], True)
         if info[i] == "counter":
             info = updateInfo(info, i, 2, target, user)
-            applyStatus(user, user, "COUNTER", 0, info[info.index("counter") + 1], "", "-", False)
+            applyStatus(user, user, "COUNTER", 0, info[i + 1], "", "-", False)
         if info[i] == "loot":
             info = updateInfo(info, i, 3, target, user)
-            if info[info.index("loot") + 1] == "coins":
-                Loot(info[info.index("loot") + 2], "coins")
-            else:
-                for j in range(info[info.index("loot") + 2]):
-                    Loot(deceased, info[info.index("loot") + 1])
+            if info[i + 1] == "coins":
+                Loot(info[i + 2], "coins")
+            elif info[i + 1] in itemName:
+                getItem(info[i + 1], info[i + 2])
+            else: 
+                for j in range(info[i + 2]):
+                    Loot(deceased, info[i + 1])
         if info[i] == "swarm":
             if summonFaction == "summon":
                 if sum(1 for s in summonList if s.id == user.id) > 1:
                     swarm = True
                 victim = next((s for s in summonList if s.id == user.id), None)
-                bodies = info[info.index("swarm") + 1]
+                bodies = info[i + 1]
             elif summonFaction == "enemy":
                 if sum(1 for s in enemyList if s.id == user.id) > 1:
                     swarm = True
                 victim = next((s for s in enemyList if s.id == user.id), None)
-                bodies = info[info.index("swarm") + 1]
+                bodies = info[i + 1]
             if next((s for s in victim.status if s[0] == "SWARM"), [0, 0, 0, 0])[1] == 0:
                 modifier = -1
             else:
@@ -838,12 +889,12 @@ def Effect(user, target, name, info, cost):
                     cleansables.append(next((s for s in target.status if s[0] == i), [0, 0, 0, 0])[0])
             print(cleansables)
             if len(cleansables) > 0:
-                applyStatus(user, target, random.choice(cleansables), 0, -info[info.index("cleanse") + 1], "-", False)
+                applyStatus(user, target, random.choice(cleansables), 0, -info[i + 1], "-", False)
         if info[i] == "useSkill":
             info = updateInfo(info, i, 2, target, user)
             mates = partyList + summonList if isinstance (user, PlayerData) else enemyList
             notMates = enemyList if isinstance (user, PlayerData) else partyList + summonList
-            skillInfo = skillList[skillName.index(info[info.index("useSkill") + 1])]
+            skillInfo = skillList[skillName.index(info[i + 1])]
             targets = mates if skillInfo.targets else notMates
             if skillInfo.AOE:
                 targets = mates if skillInfo.targets else notMates
@@ -851,6 +902,20 @@ def Effect(user, target, name, info, cost):
             elif target not in targets:
                 target = random.choice(targets)
                 skillEffect(user, target, skillInfo, False)
+        if info[i] == "triggerGain":
+            info = updateInfo(info, i, 2, target, user)
+            for j in user.traits:
+                trait = traitList[traitName.index(j[0])]
+                if j[0] == name:
+                    j[1] += info[i + 1]
+                    print(j[1])
+                    for k in trait.info:
+                        if k[0] == "onTrigger":
+                            print(k[4])
+                            if j[1] >= k[4]:
+                                print("hi")
+                                j[1] -= k[4]
+                                traitEffect(user, target, trait, k, "onTrigger")
 
         if buffDataCollecting:
             buffData.append(info[i])
@@ -865,6 +930,8 @@ def updateInfo(info, startingNumber, total, target, user):
                         info[startingNumber + i][j] = recordingLastDamage[allEntities.index(target)] 
                     elif info[startingNumber + i][j + 1] == "user":
                         info[startingNumber + i][j] = recordingLastDamage[allEntities.index(user)]
+                if info[startingNumber + i][j] == "statusStacksApplied":
+                    info[startingNumber + i][j] = statusStacksApplied
                 if (isinstance(info[startingNumber + i][j], int) or isinstance(info[startingNumber + i][j], float)): 
                     carrier += info[startingNumber + i][j]
                 else:
@@ -943,7 +1010,7 @@ def addSummon(summoner, idk):
     updateHp(next((s for s in summonList if s.id == summonData.id), None), 0)
 
 def applyStatus(user, target, status, stacks, stacksChange, duration, text, replaceOriginal):
-    global override, overrideContext, skillCondition, buffDataCollecting
+    global override, overrideContext, skillCondition, buffDataCollecting, statusStacksApplied
 
     carrier = False
     hitList = []
@@ -951,9 +1018,11 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
     
     for i in range(len(target.status)):
         if target.status[i][0] == status:
+            statusStacksApplied = stacksChange
             target.status[i][1] += stacksChange
             if target.status[i][1] <= stacks:
-                target.status[i][1] == stacks
+                statusStacksApplied = stacks
+                target.status[i][1] = stacks
             if not target.status[i][2] == "" or "INFUSE":
                 target.status[i][2] += duration
             if target.status[i][1] <= 0 or (isinstance(target.status[i][2], int) and target.status[i][2] <= 0):
@@ -961,6 +1030,7 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
             carrier = True
 
     if not carrier:
+        statusStacksApplied = stacks + stacksChange
         target.status.append([status, stacks + stacksChange, duration, text])
     
     if replaceOriginal:
@@ -1013,7 +1083,8 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         traitInfo = traitList[traitName.index(user.traits[i][0])]
         for j in traitInfo.info:
             if j[0] == "onApplyStatus":
-                traitEffect(user, target, traitInfo, j, "onApplyStatus")
+                if j[4] == status.upper():
+                    traitEffect(user, target, traitInfo, j, "onApplyStatus")
 
 def applyStats(user, target, stat, val):
     carrier = False
@@ -1261,56 +1332,6 @@ async def combatRoomGen():
 
     for i in range(len(currentLevel.enemyRoster)):
         await addEnemy(currentLevel.enemyRoster[i])
-           
-async def addEnemy(idk):
-    global enemyList, enemyNumber, swarm, summonFaction, allEntities
-
-    enemyData = enemyStats[enemyName.index(idk)]
-
-    enemyNumber += 1
-    swarm = False
-    summonFaction = "enemy"
-
-    enemy = enemyParty[enemyNumber]
-    enemy.load_from(enemyData)
-    enemyList.append(enemy)
-
-    for i in range(len(enemyList) - 1):
-        if enemyList[i].id == enemy.id:
-            if isinstance(enemy.id[-2], int):
-                enemy.id[-2] = enemy.id[-2] + 1
-            else:
-                enemy.id = f"{enemy.id} (1)"
-
-    for i in range(len(enemyData.traits)):
-        traitInfo = traitList[traitName.index(enemyData.traits[i][0])]
-        for j in traitInfo.info:
-            if j[0] == "onSummon":
-                traitEffect(enemyData, enemyData, traitInfo, j, "onSummon")
-    
-    if not swarm:
-        generateWindow(enemy, "enemy", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
-        screen = document.getElementById(enemy.id)
-        def addStatus():
-            statusButton = screen.querySelector("#button2")
-            statusButton.innerHTML = "i"
-
-            if statusButton:
-                def onClick(event=None):
-                    print("hi")
-                    generateStatusWindow(next((s for s in enemyList if s.id == enemy.id)), "enemy")
-                
-                proxyClickStatus = create_proxy(onClick)
-                statusButton.addEventListener("click", proxyClickStatus)
-            else:
-                print("where?")
-        
-        setTimeout(create_proxy(addStatus), 0)
-    else:
-        enemyNumber -= 1
-        enemyList.remove(enemy)
-
-    updateHp(next((s for s in enemyList if s.id == enemyData.id), None), 0)
 
 def Bag():
     print("hi")
@@ -1337,7 +1358,7 @@ def getItem(item, number):
         bag.remove(next((s for s in bag if s[0] == hitList[i]), None))
 
 def useItem(item, target):  
-    itemInfo = itemList[itemName.index(item)].copy()
+    itemInfo = copy.deepcopy(itemList[itemName.index(item)])
     mates = partyList + summonList
     notMates = enemyList
     targets = []

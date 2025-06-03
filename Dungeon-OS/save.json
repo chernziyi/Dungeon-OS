@@ -12,9 +12,11 @@
             "speed": 6,
             "counter": 0,
             "specialStats": [],
-            "traits": [],
+            "traits": [
+                ["Haemocollector", 29]
+            ],
             "skills": [
-                ["Transplant", 0]
+                ["Open Wound", 0]
             ],
             "status": [],
             "equipment": [],

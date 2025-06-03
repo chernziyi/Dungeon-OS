@@ -5,7 +5,7 @@ from item import itemName, itemList
 
 from html import escape
 from js import document, requestAnimationFrame, window, setTimeout
-import random, asyncio, re, math
+import random, asyncio, re, math, copy
 from pyodide.ffi import create_proxy  # type: ignore
 from pyodide.http import pyfetch # type: ignore
 
@@ -725,13 +725,13 @@ def createSkillDesc(user, hoi):
     buffing = False
     text = ""
     if hoi in skillName:
-        skillData = skillList[skillName.index(hoi)].copy()
+        skillData = copy.deepcopy(skillList[skillName.index(hoi)])
         idk = skillData.info
         text = skillData.actualDesc
         if skillData.multi > 1:
             text = re.sub(r'\bmulti\b', f"{skillData.multi}", text, count=1)
     elif hoi in traitName:
-        skillData = traitList[traitName.index(hoi)].copy()
+        skillData = copy.deepcopy(traitList[traitName.index(hoi)])
         idk = skillData.info
         text = skillData.actualDesc
         print(user.traits)
@@ -739,7 +739,7 @@ def createSkillDesc(user, hoi):
         secondaryNumber = next((s for s in user.traits if s[0] == hoi), [0, 0])[1]
         text = re.sub(r'\bsecondaryNumber\b', f"{secondaryNumber}", text, count=1)
     elif hoi in itemName:
-        skillData = itemList[itemName.index(hoi)].copy()
+        skillData = copy.deepcopy(itemList[itemName.index(hoi)])
         idk = skillData.info
         text = skillData.actualDesc
         if skillData.type == "weapon" or "relic":

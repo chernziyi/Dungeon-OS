@@ -18,7 +18,7 @@ KeywordData("CHANT", "Time till your next skill. Cooldown, much?",\
 [["lose", "target keeps on chanting!"]]),\
 KeywordData("DRUNK", "Not a sin, just an addiction. +25% Attack, -25% Accuracy per stack, lose 1 stack at end of turn.",\
 [["gain", "target feels a bit tipsy!"], ["lose", "user is slowly revovering!"]]),\
-KeywordData("BLEED", "'Tis but a scratch.' Deal damage to self equal to stacks at the start of your turn and reduce stacks by half, gain 10% of damage dealt by attacks as bleed.",\
+KeywordData("BLEED", "'Tis but a scratch.' Deal damage to self equal to stacks at the start of your turn and reduce BLEED by half. Gain 10% of damage dealt by attacks as BLEED.",\
 [["gain", "target starts bleeding!"], ["trigger", "target loses some blood!"]]),\
 KeywordData("HEMOTOXIN", "Your next instance of bleed damage does not reduce BLEED by half.",\
 [["trigger", "The wound won't heal!"]]),\

@@ -22,18 +22,27 @@ potionNeutralName =\
 ["Honeypot", "Herbal Leaf"]
 potionNeutralList =\
 [ItemData("Honeypot", "potion", False, False, False, ["buffDuration", "", "buff", "spd", -2, "buffEnd"],\
-"Honey so sticky electrons get stuck in it! Now for only 3 coins.",\
-"assets/sprites/Items/Potions/Png/Honeypot.png",\
+"Honey so sticky electrons get stuck in it! Now for only 20 coins.",\
 "Target receives spdAmount SPD.",
-"user yeets the item at target, gumming them up!", 10),\
+"assets/sprites/Items/Potions/Png/Honeypot.png",\
+"user yeets the item at target, gumming them up!", 20),\
 ItemData("Herbal Leaf", "potion", True, True, False, ["heal", 5],\
 "This leaf means the diffrence between death and a delayed, minty death.",\
 "Target heals by healAmount.",
 "assets/sprites/Items/Potions/Png/Herbal Leaf.png",\
-"target slaps the item on their wounds!", 10)]
+"target slaps the item on their wounds!", 30)]
 
-potionName = potionNeutralName
-potionList = potionNeutralList
+potionDissectorName =\
+["Blood Vial"]
+potionDissectorList =\
+[ItemData("Blood Vial", "potion", False, False, False, ["bleed", 1, 5],\
+"It's the glass that makes enemies bleed, if you're wondering.",\
+"assets/sprites/Items/Potions/Png/Honeypot.png",\
+"Inflict bleedAmount BLEED.",
+"user yeets the item at target, causing them to leak some red!", 30)]
+
+potionName = potionNeutralName + potionDissectorName
+potionList = potionNeutralList + potionDissectorList
 
 weaponDissectorName =\
 ["Scalpel", "Balisong"]

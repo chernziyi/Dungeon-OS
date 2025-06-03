@@ -46,7 +46,7 @@ pirateTraitList =\
 [["onEnemyDeath", "user finds some coins from... somewhere..."]], 80, "")]
 
 dissectorTraitName =\
-["Pharmacy", "Band-Aid Pro", "Fight Or Flight", "Sneaky Cuts"]
+["Pharmacy", "Band-Aid Pro", "Fight Or Flight", "Sneaky Cuts", "Haemocollector"]
 dissectorTraitList =\
 [TraitData("Pharmacy", "", 0, [["onEnemyDeath", True, False, False, "loot", "potion", 1]],\
 "'What? I am a person of medicine, after all.",\
@@ -64,7 +64,12 @@ TraitData("Sneaky Cuts", "usesPerTurn", 1,
 [["onDamage", False, False, False, "damage", "fixed", 1, ""]], 
 "Every strike brings a little extra pain.", 
 "When you deal damage: deal damageAmount damage. Uses Per Turn: secondaryNumber.",
-[["onDamage", "user slashes a little deeper!"]], 150, "")]
+[["onDamage", "user slashes a little deeper!"]], 50, ""),
+TraitData("Haemocollector", "trigger", 0, 
+[["onApplyStatus", True, False, False, "BLEED", "triggerGain", ["statusStacksApplied"]], ["onTrigger", True, True, False, 30, "loot", "Blood Vial", 1]], 
+"'This isn't hoarding, it's collecting valuable samples!'", 
+"Every 30 BLEED inflicted: Obtain a Blood Vial.",
+[["onApplyStatus", "user fills up a vial of blood!"], ["onTrigger", "The vial is filled!"]], 50, "")]
 
 qiMasterTraitName =\
 ["Punching Mastery"]
