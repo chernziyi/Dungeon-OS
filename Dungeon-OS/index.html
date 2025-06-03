@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>DungeonOS</title>
+
+        <meta charset="UTF-8">
+        <meta name="author" content="HyperMuffin">
+
+        <link rel="stylesheet" href="https://pyscript.net/releases/2025.3.1/core.css" />
+        <link rel="stylesheet" href="assets/css/style.css" />
+        <script type="module" src="https://pyscript.net/releases/2025.3.1/core.js"></script>
+
+        <py-config>
+            packages = []
+            [[fetch]]
+            from = "assets/js"
+            files = ["game.py", "player.py", "enemy.py", "ui.py", "level.py", "skills.py", "traits.py", "item.py", "keywords.py", "upgrades.py"]
+        </py-config>
+    </head>
+
+    <body style="text-align: center; background-color: #2db3b3;">
+        <py-script src="assets/js/game.py"></py-script> 
+    </body>
+</html>

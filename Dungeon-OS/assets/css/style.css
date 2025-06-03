@@ -1,0 +1,329 @@
+/* Color palette */
+:root {
+    /* Color BS */ 
+    --background: #2db3b3;
+    --window: #c0c0c0;
+    --windowBorder: #0a0a0a;
+
+    --buttonFace: #e1e1e1;
+    --buttonHighlight: #fcfcfc;
+    --buttonShadow: #848484;
+
+    --title: #2d4eb3;
+    --titleFade: #2e6d99;
+    --titleGray: #b3b3b3;
+    --titleGrayFade: #999999;
+
+    /* Spacing Nonsense */
+    --spacingNormal: 8px;
+    --spacingThin: 4px;
+
+    /* Borders */
+    --borderWidth: 1px;
+    --borderRaisedOuter: inset -1px -1px var(--window),
+        inset 1px 1px var(--buttonHighlight);
+    --borderRaisedInner: inset -2px -2px var(--buttonShadow),
+        inset 2px 2px var(--buttonFace);
+    --borderSunkenOuter: inset -1px -1px var(--buttonHighlight),
+        inset 1px 1px var(--window);
+    --borderSunkenInner: inset -2px -2px var(--buttonFace),
+        inset 2px 2px var(--buttonShadow);
+
+    /* Window borders flip button-face and button-highlight */
+    --borderWindowOuter: inset -1px -1px var(--window),
+        inset 1px 1px var(--buttonFace);
+    --borderWindowInner: inset -2px -2px var(--buttonShadow),
+        inset 2px 2px var(--buttonHighlight);
+
+    /* Field borders (checkbox, input, etc) flip window-frame and button-shadow */
+    --borderField: inset -1px -1px var(--buttonHighlight),
+        inset 1px 1px var(--buttonShadow), inset -2px -2px var(--buttonFace),
+        inset 2px 2px var(--windowFrame);
+}
+
+body {
+    color: var(--background);
+    font-size: 16px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+h1 {
+    font-size: 5rem;
+}
+  
+h2 {
+    font-size: 2.5rem;
+}
+  
+h3 {
+    font-size: 2rem;
+}
+  
+h4 {
+    font-size: 1.5rem;
+}
+  
+u {
+    text-decoration: none;
+    border-bottom: 0.5px solid #222222;
+} 
+
+button, input[type="file"] {
+    box-sizing: border-box;
+    border: none;
+    background: var(--window);
+    box-shadow: var(--borderRaisedOuter), var(--borderRaisedInner);
+    border-radius: 0;
+    color: var(--windowBorder);
+    min-width: 75px;
+    min-height: 23px;
+    padding: 0 12px;
+}
+
+button:not(:disabled):active,
+input[type="file"]:not(:disabled):active {
+    box-shadow: var(--borderSunkenOuter), var(--borderSunkenInner);
+    padding: 2px 11px 0 13px;
+}
+
+button::-moz-focus-inner,
+input[type="file"]::-moz-focus-inner {
+    border: 0;
+}
+
+:disabled,
+:disabled + label,
+:read-only,
+:read-only + label {
+    color: var(--windowBorder);
+}
+
+button:disabled,
+input[type="file"]:disabled,
+:disabled + label {
+    text-shadow: 1px 1px 0 var(--buttonHighlight);
+}
+
+.table1 {
+    max-width: 60%; 
+    border-style: solid;
+    border-width: 2px; 
+    border-color: #000000;
+    margin: 0 auto; 
+    border-collapse: collapse;
+    text-align: center; 
+    font-size: 24px; 
+    font-family: 'Courier New', monospace; 
+}
+
+.table1 td {
+    width: 20%;
+    border-style: solid;
+    border-width: 2px; 
+    border-color: #000000;
+    text-align: center; 
+    font-size: 24px; 
+    font-family: 'Courier New', monospace; 
+}
+
+.hoverWrapper {
+    position: relative;
+    display: inline;
+}
+
+.hoverText {
+    position: relative; /* Make hoverText the positioning context */
+    display: inline;
+    cursor: pointer;
+}
+
+.window {
+    width: max-content;
+    max-width: 30vw;
+    box-shadow: var(--borderWindowOuter), var(--borderWindowInner);
+    background: var(--window);
+    padding: 3px;
+    z-index: 1000; /* Ensure windows are above other content */
+    position: absolute; /* Reinforce Python positioning */
+}
+
+.descriptionWindow {
+    position: absolute;
+    width: max-content;
+    max-width: 30vw;
+    box-shadow: var(--borderWindowOuter), var(--borderWindowInner);
+    background: var(--window);
+    padding: 3px;
+    z-index: 1000;
+    top: 100%; /* Position below the hoverText */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    display: block;
+}
+
+.hoverText:hover + .descriptionWindow,
+.hoverWrapper:hover .descriptionWindow {
+    visibility: visible;
+    opacity: 1;
+}
+
+.windowBody {
+    margin: var(--spacingNormal);
+    position: relative;
+}
+
+.title {
+    background: linear-gradient(90deg, var(--title), var(--titleFade));
+    padding: 3px 2px 3px 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+    font-size: 16px;
+    user-select: none; /* Prevent text selection during drag */
+}
+
+.title.inactive {
+    background: linear-gradient(90deg, var(--titleGray), var(--titleGrayFade));
+}
+
+.titleText {
+    font-weight: bold;
+    color: white;
+    letter-spacing: 0;
+    margin-right: 24px;
+}
+
+.titleControls {
+    display: flex;
+    pointer-events: auto; /* Ensure buttons receive pointer events */
+}
+
+.titleControls button {
+    padding: 0;
+    display: block;
+    min-width: 16px;
+    min-height: 14px;
+}
+
+.titleControls button:active {
+    padding: 0;
+}
+  
+.titleControls button:focus {
+    outline: none;
+}
+
+.titleControls button[aria-label="Close"] {
+    margin-left: 2px;
+    background-repeat: no-repeat;
+    background-position: top 3px left 4px;
+}
+
+.titleButton {
+    min-width: 20px; /* Larger for better clickability */
+    min-height: 20px;
+    padding: 0;
+    background: var(--window); /* Match window background */
+    color: var(--windowBorder); /* Match text color */
+    border: none;
+    box-shadow: var(--borderRaisedOuter), var(--borderRaisedInner); /* Consistent button style */
+    cursor: pointer; /* Indicate clickability */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px; /* Smaller font for "X" to fit */
+    line-height: 1; /* Prevent line-height issues */
+    pointer-events: auto; /* Ensure it receives clicks */
+    margin-left: 2px; /* Keep existing margin */
+}
+
+.closeButton:active {
+    box-shadow: var(--borderSunkenOuter), var(--borderSunkenInner); /* Sunken effect on click */
+    padding: 1px 0 0 1px; /* Slight offset for pressed effect */
+}
+
+.closeButton:focus {
+    outline: 1px dotted var(--windowBorder); /* Accessible focus indicator */
+}
+
+.progressBarFrame {
+    height: 16px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 3px;
+    background-color: var(--buttonFace);
+    box-shadow: var(--borderSunkenOuter), var(--borderSunkenInner);
+    position: relative;
+    overflow: hidden;
+}
+
+.progressBar {
+    display: block;
+    height: 100%;
+    width: var(--progress); /* dynamic width here */
+}
+
+.itemGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 32px);  /* 4 columns */
+    grid-template-rows: repeat(4, 32px);     /* 4 rows */
+    gap: var(--spacingThin);
+    padding: var(--spacingNormal);
+    position: relative;
+    width: max-content;
+    height: max-content;
+}
+
+.itemIcon {
+    height: 32px;
+    width: 32px;
+    cursor: move;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+
+.itemIcon:hover {
+    transform: scale(1.05);
+}
+
+.placeholder {
+    background-color: transparent;
+    border: 2px dashed #999;
+    border-radius: 5px;
+    height: 32px;
+    width: 32px;
+    box-sizing: border-box;
+}
+
+.appGrid {
+    display: grid;
+    grid-auto-columns: 80px;
+    grid-auto-rows: 80px;
+    gap: var(--spacingNormal);
+    padding: var(--spacingNormal);
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+.appIcon {
+    height: 80px;
+    width: 80px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+}
+
+.appIcon:hover {
+    transform: scale(1.05);
+}
