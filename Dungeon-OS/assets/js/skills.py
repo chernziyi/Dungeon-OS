@@ -36,16 +36,12 @@ class SkillData:
 #neutralSkills are all enemy skills and skills anyone could have 
 
 neutralSkillName =\
-["Attack", "Kamikaze", "Reload", "Counter"]
+["Attack", "Reload", "Counter"]
 neutralSkillList =\
 [SkillData("Attack", 0, False, False, False, False, 1, 0.8, ["damage", "str", 2, 0.2],\
 "The simplest of strikes, the most basic form of offense, yet slays foes every time.",\
 "Deal damageAmount damage.",\
 [["-", "user goes for a strike at target!"]], 0, ""),\
-SkillData("Kamikaze", 10, False, False, False, False, 1, 0.8, ["damage", "str", 4, 0.2, "die"],\
-"FREEEEEEEEEDOOOOOOOOOM! Kills the user.",\
-"Deal damageAmount damage, then die.",\
-[["-", "user goes out with a suicidal charge towards target!"]], 0, ""),\
 SkillData("Reload", 0, False, True, False, False, 1, 100, ["reload"],\
 "Remember kids, switching to another skill is faster than reloading.",\
 "Reload.",\
@@ -54,6 +50,30 @@ SkillData("Counter", 0, False, False, False, False, 1, 100, ["damage", "str", 1,
 "Rebellion at it's essence.",\
 "Deal damageAmount damage back at the attacker.",\
 [["-", "user strikes back at target!"]], 0, "")]
+
+beeSkillName =\
+["Kamikaze", "Overtime"]
+beeSkillList =\
+[SkillData("Kamikaze", 10, False, False, False, False, 1, 0.8, ["damage", "str", 4, 0.2, "die"],\
+"FREEEEEEEEEDOOOOOOOOOM! Kills the user.",\
+"Deal damageAmount damage, then die.",\
+[["-", "user goes out with a suicidal charge towards target!"]], 0, ""),
+SkillData("Overtime", 30, False, True, False, False, 1, 100, ["undying", 1],\
+"Even in death, unpaid overtime exists.",\
+"Gain undyingAmount UNDYING",\
+[["-", "user takes up another shift!"]], 0, "")]
+
+cultistSkillName =\
+["The Calling", "Prayer"]
+cultistSkillList =\
+[SkillData("The Calling", 40, False, False, True, False, 1, 100, ["damage", "FAITH", 2, 0.2, "faith", "loseAll"],\
+"Get ready to convert, cause your God can't save you now.",\
+"Deal damageAmount damage to all enemies. Lose all FAITH",\
+[["-", "user blasts a beam of faith!"]], 0, ""),
+SkillData("Prayer", 20, False, True, False, False, 1, 100, ["pray", 10],\
+"[Prayer removed for your safety]",\
+"Pray prayAmount.",\
+[["-", "user mutters the holy texts!"]], 0, "")]
 
 pirateSkillName =\
 ["Pistol Shot", "Cannon Call", "Drinks Up!", "Lay Low"]
@@ -172,7 +192,7 @@ SkillData("Fancy Feet", 10, False, True, False, False, 1, 100, ["buffDuration", 
 "gain dodgeAmount DODGE for buffDuration turns.",\
 [["-", "user shows off some footwork!"]], 40, "")]
 
-skillName = neutralSkillName + pirateSkillName + dissectorSkillName + qiMasterSkillName + ravenSkillName\
-            + shamanSkillName + bardSkillName
-skillList = neutralSkillList + pirateSkillList + dissectorSkillList + qiMasterSkillList + ravenSkillList\
-            + shamanSkillList + bardSkillList
+skillName = neutralSkillName + beeSkillName + cultistSkillName + pirateSkillName + dissectorSkillName + qiMasterSkillName + ravenSkillName +\
+shamanSkillName + bardSkillName
+skillList = neutralSkillList + beeSkillList + cultistSkillList + pirateSkillList + dissectorSkillList + qiMasterSkillList + ravenSkillList +\
+shamanSkillList + bardSkillList

@@ -89,16 +89,33 @@ def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
 
 def generateStatusWindow(subject, faction):
     hoi = False
+    Xpos = "0px"
+    Ypos = "0px"
+
     screen = document.getElementById(f"{subject.id}Status")
     if screen:
-        screen.remove()
-
-    screen = document.createElement("div")
-    screen.className = "window"
-    screen.id = f"{subject.id}Status"
-    document.body.appendChild(screen)
+        # Get the computed position of the div
+        rect = screen.getBoundingClientRect()
+        Xpos = f"{rect.left}px"
+        Ypos = f"{rect.top}px"
+        screen.innerHTML = ""
+    else:
+        screen = document.createElement("div")
+        screen.className = "window"
+        screen.id = f"{subject.id}Status"
+        document.body.appendChild(screen)
+        # Randomize position for new divs
+        viewport_width = window.innerWidth
+        viewport_height = window.innerHeight
+        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
+        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
+        max_left = viewport_width - window_width
+        max_top = viewport_height - window_height
+        Xpos = f"{random.randint(0, max(0, max_left))}px"
+        Ypos = f"{random.randint(0, max(0, max_top))}px"
     
     addTitle(f"{subject.id}Status", f"Status ({subject.id})", True, None, False)
+    setPosition(f"{subject.id}Status", Xpos, Ypos, "")
 
     for i in range(len(subject.traits)):
         traitInfo = traitList[traitName.index(subject.traits[i][0])]
@@ -258,19 +275,7 @@ def generateStatusWindow(subject, faction):
 
             addDescription(statWindow.querySelector("#equipment"), i, placeholder)
 
-    viewport_width = window.innerWidth
-    viewport_height = window.innerHeight
-    window_width = screen.offsetWidth
-    window_height = screen.offsetHeight
-
-    max_left = viewport_width - window_width
-    max_top = viewport_height - window_height
-
-    random_left = random.randint(0, max(0, max_left))
-    random_top = random.randint(0, max(0, max_top))
-
-    screen.style.left = f"{random_left}px"
-    screen.style.top = f"{random_top}px"
+    screen.style.visibility = ""
 
 def setPosition(div, positionX, positionY, override):
     ui = document.getElementById(div)
@@ -703,6 +708,7 @@ def Notification(text):
     # Randomize position for new divs
     viewport_width = window.innerWidth
     viewport_height = window.innerHeight
+    viewport_height = window.innerHeight
     window_width = container.offsetWidth or 200  # Fallback if offsetWidth is 0
     window_height = container.offsetHeight or 200  # Fallback if offsetHeight is 0
     max_left = viewport_width - window_width
@@ -714,7 +720,7 @@ def Notification(text):
     addTitle(container.id, "Notification", True, None, False)
 
     # Apply the position immediately
-    setPosition(container, Xpos, Ypos, "")
+    setPosition(container.id, Xpos, Ypos, "")
 
     windowBody = document.createElement("div")
     windowBody.className = "windowBody"
@@ -734,8 +740,6 @@ def createSkillDesc(user, hoi):
         skillData = copy.deepcopy(traitList[traitName.index(hoi)])
         idk = skillData.info
         text = skillData.actualDesc
-        print(user.traits)
-        print(idk)
         secondaryNumber = next((s for s in user.traits if s[0] == hoi), [0, 0])[1]
         text = re.sub(r'\bsecondaryNumber\b', f"{secondaryNumber}", text, count=1)
     elif hoi in itemName:
@@ -751,7 +755,15 @@ def createSkillDesc(user, hoi):
     for info in idk: 
         for i in range(len(info)):
             if isinstance(info[i], list):
-                info[i] = 0
+                carrier = 0
+                for j in range(len(info[i])):
+                    if info[i][j] == "secondaryNumber":
+                        info[i][j] = next((s for s in user.skills + user.traits if s[0] == hoi), [0, 0])[1]
+                    if (isinstance(info[i][j], int) or isinstance(info[i][j], float)): 
+                        carrier += info[i][j]
+                    else:
+                        carrier += 0
+                info[i] = math.ceil(carrier)
 
     for info in idk: 
         for i in range(len(info)):
@@ -760,31 +772,31 @@ def createSkillDesc(user, hoi):
                     violet = 2
                 else:
                     violet = 1
-                if info[info.index("damage") + 1] in ["fixed", "max"]:
-                    maxDamage = math.ceil(info[info.index("damage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+                if info[i + 1] in ["fixed", "max"]:
+                    maxDamage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                     * violet)
-                    minDamage = math.ceil(info[info.index("damage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+                    minDamage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                     * violet)
                 else:
 
-                    if info[info.index("damage") + 1] == "str":
+                    if info[i + 1] == "str":
                         damage = user.strength
-                    elif info[info.index("damage") + 1] == "spd":
+                    elif info[i + 1] == "spd":
                         damage = user.speed
-                    elif info[info.index("damage") + 1] == "def":
+                    elif info[i + 1] == "def":
                         damage = user.defense
-                    elif info[info.index("damage") + 1] == "star":
-                        damage = next((s for s in user.specialStats if s[0] == "STARS"), [0, 0, 0])[1]
+                    elif info[i + 1] == "FAITH":
+                        damage = next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0, 0])[1]
 
-                    maxDamage = math.ceil(damage * info[info.index("damage") + 2] *\
-                    (1 + info[info.index("damage") + 3]) *\
+                    maxDamage = math.ceil(damage * info[i + 2] *\
+                    (1 + info[i + 3]) *\
                     (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet)
 
                     if maxDamage <= 0:
                         maxDamage = 1
                     
-                    minDamage = math.ceil(damage * info[info.index("damage") + 2] *\
-                    (1 - info[info.index("damage") + 3]) *\
+                    minDamage = math.ceil(damage * info[i + 2] *\
+                    (1 - info[i + 3]) *\
                     (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet)
 
                     if minDamage <= 0:
@@ -799,10 +811,10 @@ def createSkillDesc(user, hoi):
                     violet = 2
                 else:
                     violet = 1
-                if info[info.index("selfDamage") + 1] in ["fixed", "max"]:
-                    maxDamage = math.ceil(info[info.index("selfDamage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+                if info[i + 1] in ["fixed", "max"]:
+                    maxDamage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                     * violet)
-                    minDamage = math.ceil(info[info.index("selfDamage") + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
+                    minDamage = math.ceil(info[i + 2] * (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1)
                     * violet)
                 else:
                     if next((s for s in user.specialStats if s[0] == "VIOLET"), [0, 0])[1] > 0:
@@ -810,24 +822,24 @@ def createSkillDesc(user, hoi):
                     else:
                         violet = 1
 
-                    if info[info.index("selfDamage") + 1] == "str":
+                    if info[i + 1] == "str":
                         damage = user.strength
-                    elif info[info.index("selfDamage") + 1] == "spd":
+                    elif info[i + 1] == "spd":
                         damage = user.speed
-                    elif info[info.index("selfDamage") + 1] == "def":
+                    elif info[i + 1] == "def":
                         damage = user.defense
-                    elif info[info.index("selfDamage") + 1] == "star":
-                        damage = next((s for s in user.specialStats if s[0] == "STARS"), [0, 0, 0])[1]
+                    elif info[i + 1] == "FAITH":
+                        damage = next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0, 0])[1]
 
-                    maxDamage = math.ceil(damage * info[info.index("selfDamage") + 2] *\
-                    (1 + info[info.index("selfDamage") + 3]) *\
+                    maxDamage = math.ceil(damage * info[i + 2] *\
+                    (1 + info[i + 3]) *\
                     (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet)
 
                     if maxDamage <= 0:
                         maxDamage = 1
                     
-                    minDamage = math.ceil(damage * info[info.index("selfDamage") + 2] *\
-                    (1 - info[info.index("selfDamage") + 3]) *\
+                    minDamage = math.ceil(damage * info[i + 2] *\
+                    (1 - info[i + 3]) *\
                     (next((s for s in user.specialStats if s[0] == "DAMAGEUP"), [0, 0, 0])[1] + 1) * violet)
 
                     if minDamage <= 0:
@@ -889,10 +901,14 @@ def createSkillDesc(user, hoi):
                 starsAmount = info[info.index("stars") + 1]
                 text = re.sub(r"\bstarsAmount\b", f"{starsAmount}", text, count=1)
             if info[i] == "stealth":
-                stealthAmount = info[info.index("stealth") + 1]
+                stealthAmount = info[i + 1]
                 text = re.sub(r"\bstealthAmount\b", f"{stealthAmount}", text, count=1)
+            if info[i] == "faith":
+                if isinstance(info[i + 1], int):
+                    faithAmount = info[i + 1]
+                    text = re.sub(r"\bstealthAmount\b", f"{stealthAmount}", text, count=1)
             if info[i] == "buffDuration":
-                buffDuration = info[info.index("buffDuration") + 1]
+                buffDuration = info[i + 1]
                 text = re.sub(r"\bbuffDuration\b", f"{buffDuration}", text, count=1)
             if info[i] == "counter":
                 counterAmount = info[info.index("counter") + 1]
@@ -910,8 +926,14 @@ def createSkillDesc(user, hoi):
                 cleanseAmount = info[info.index("cleanse") + 1]
                 text = re.sub(r"\bcleanseAmount\b", f"{cleanseAmount}", text, count=1)
             if info[i] == "useSkill":
-                skillUsed = info[info.index("useSkill") + 1]
+                if isinstance(info[i + 1], int):
+                    skillUsed = user.skills[info[i + 1]]
+                else:
+                    skillUsed = info[i + 1]
                 text = re.sub(r"\bskillUsed\b", f"{skillUsed}", text, count=1)
+            if info[i] == "checkStacks":
+                stacksRequired = info[i + 3]
+                text = re.sub(r"\bstacksRequired\b", f"{stacksRequired}", text, count=1)
             if info[i] == "buff":
                 buffing = True
             if info[i] == "buffEnd":
@@ -976,7 +998,6 @@ def generateOSScreen(CallbackShop=None, CallbackBag=None, CallbackSave=None, Cal
         app.id = f"{i}"
         app.innerHTML = f"{i}"
 
-
         if i == "Archiver":
             makeIconDraggable(app, grid, "App", None, callbackClick=appCallbacks[apps.index(i)], callbackSaveUpload=CallbackSaveUpload, callbackSaveDownload=CallbackSaveDownload)
         else: 
@@ -1027,7 +1048,6 @@ def generateSaveWindow(CallbackSaveUpload=None, CallbackSaveDownload=None):
     uploadButton.style.visibility = "hidden"
     windowBody.appendChild(uploadButton)
 
-    # Create visible label
     uploadLabel = document.createElement("label")
     uploadLabel.htmlFor = "upload"
     uploadLabel.id = "uploadLabel"

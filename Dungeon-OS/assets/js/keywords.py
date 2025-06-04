@@ -10,7 +10,7 @@ class KeywordData:
         self.__dict__.update(other.__dict__)
 
 statusName =\
-["AMMO", "CHANT", "DRUNK", "BLEED", "HEMOTOXIN", "INFUSE", "PLAGUE", "TAUNT", "STEALTH"]
+["AMMO", "CHANT", "DRUNK", "BLEED", "HEMOTOXIN", "INFUSE", "PLAGUE", "TAUNT", "STEALTH", "UNDYING", "FAITH"]
 statusList =\
 [KeywordData("AMMO", "How many of those shots your gun can do. Use wisely!",\
 [["gain", "user loads in some ammo!"], ["lose", "user used up stacks ammo!"]]),\
@@ -29,7 +29,11 @@ KeywordData("PLAGUE", "Increases by 1 at the start of each turn. When stacks exc
 KeywordData("TAUNT", "'He's really had it out for yer!'",\
 [["gain", "target looks... angrier?"]]),\
 KeywordData("STEALTH", "You won't be a target. That is, until you strike...",\
-[["gain", "target is now out of sight and mind!"], ["trigger", "target cannot wait any longer!"]])]
+[["gain", "target is now out of sight and mind!"], ["trigger", "target cannot wait any longer!"]]),
+KeywordData("UNDYING", "Rebirth after death, but still close to it.",\
+[["trigger", "target rises from the dead!"]]),
+KeywordData("FAITH", "As one believes enough, they might see what truly lies beyond our world... Reduces when hurt.",\
+[["gain", "target glows brighter!"]])]
 
 statsName =\
 ["STR", "DEF", "SPD", "PENETRATION", "THORNS", "STARS", "DAMAGEUP", "ACCURACY", "MAX AMMO", "DODGE", "HEALBONUS",\

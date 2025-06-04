@@ -12,7 +12,8 @@ pirateUpgrades =\
 [UpgradeData(1, [["STR", 1, 5], ["ACCURACY", 0.05, 3], ["Cannon Call", 0, 1], ["Drinks Up!", 0, 1]])]
 
 dissectorUpgrades =\
-[UpgradeData(1, [["STR", 1, 3], ["HEALBONUS", 2, 5], ["Bloody Jabs", 0, 1], ["Bandages", 0, 1]])]
+[UpgradeData(1, [["STR", 1, 3], ["HEALBONUS", 2, 5], ["Bloody Jabs", 0, 1], ["Bandages", 0, 1]]),
+UpgradeData(2, [["STR", 1, 3], ["HEALBONUS", 2, 5], ["Bloody Jabs", 0, 1], ["Bandages", 0, 1]])]
 
 qiMasterUpgrades =\
 [UpgradeData(1, [["STR", 1, 3], ["DEF", 1, 3], ["HP", 20, 2], ["On Guard", 0, 1]])]

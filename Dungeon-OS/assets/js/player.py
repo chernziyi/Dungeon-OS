@@ -19,7 +19,7 @@ class PlayerData:
     specialStats: Tuple[str]
     traits: Tuple[str]
     skills: Tuple[str]
-    status: Tuple[str, int, str]
+    status: Tuple
     equipment: Tuple[str]
     equipmentSlots: int
     attackText: str

@@ -18,13 +18,9 @@ class TraitData:
 #all info refs: all should start with: self or not, mates or not, aoe or not.
 
 neutralTraitName =\
-["Enroaching Roots", "Swarm", "One With Nature", "Slippery"]
+["Swarm", "One With Nature", "Slippery"]
 neutralTraitList =\
-[TraitData("Enroaching Roots", "", 0, [["startOfTurn", False, False, True, "buffDuration", "", "buff", "spd", -1, "buffEnd"]],\
-"Roots creeping, entangling all who come near.",\
-"Start Of Turn: All enemies receive spdAmount SPD",
-[["startOfTurn", "The roots resume their slow advance..."]], 0, ""),\
-TraitData("Swarm", "", 0, [["onSummon", True, True, False, "swarm", 1]],\
+[TraitData("Swarm", "", 0, [["onSummon", True, True, False, "swarm", 1]],\
 "On Summon: gain 1 SWARM.",
 "Teamwork makes the nightmare!",\
 [["onSummon", "user joins its bretheren!"]], 0, ""),\
@@ -36,6 +32,27 @@ TraitData("Slippery", "", 0, [["onEnemyUseSkill", False, False, False, "triggerC
 "Whoopsies, I fell.",\
 "When an enemy uses a skill: target deals damage to itself.",
 [["onEnemyUseSkill", "target slips!"]], 0, "")]
+
+plantTraitName =\
+["Enroaching Roots"]
+plantTraitList =\
+[TraitData("Enroaching Roots", "", 0, [["startOfTurn", False, False, True, "buffDuration", "", "buff", "spd", -1, "buffEnd"]],\
+"Roots creeping, entangling all who come near.",\
+"Start Of Turn: All enemies receive spdAmount SPD",
+[["startOfTurn", "The roots resume their slow advance..."]], 0, "")]
+
+cultistTraitName =\
+["Faith-fueled", "Conduit Of Faith"]
+cultistTraitList =\
+[TraitData("Faith-fueled", "trigger", 0, 
+[["onGainStatus", True, False, False, "FAITH", "checkStacks", "FAITH", "reach", ["secondaryNumber"], "trigger"], ["onTrigger", True, True, False, "", "useSkill", 0]], 
+"Better than diesel.", 
+"On reaching stacksRequired FAITH: use skillUsed.",
+[["onGainStatus", "user glows brighter!"], ["onTrigger", "user surges with (un)holy energy!"]], 50, ""),
+TraitData("Conduit Of Faith", "", 0, [["conduit"]],\
+"All prayers divert to here. Think of it as 5G.",\
+"When anyone Prays: gain that much FAITH.",
+[], 0, "")]
 
 pirateTraitName =\
 ["Plunderer"]
@@ -103,7 +120,7 @@ bardTraitList =\
 "When an enemy Misses: deal damageAmount damage to them.",
 [["onEnemyMiss", "user pokes the incoming target!"]], 100, "")]
 
-traitName = neutralTraitName + pirateTraitName + dissectorTraitName + qiMasterTraitName + ravenTraitName\
-         + shamanTraitName + bardTraitName
-traitList = neutralTraitList + pirateTraitList + dissectorTraitList + qiMasterTraitList + ravenTraitList\
-         + shamanTraitList + bardTraitList
+traitName = neutralTraitName + plantTraitName + cultistTraitName + pirateTraitName + dissectorTraitName + qiMasterTraitName+\
+ravenTraitName + shamanTraitName + bardTraitName
+traitList = neutralTraitList + plantTraitList + cultistTraitList + pirateTraitList + dissectorTraitList + qiMasterTraitList+\
+ravenTraitList + shamanTraitList + bardTraitList
