@@ -61,7 +61,7 @@ GoldbotStats =\
 CultistName =\
 ["Obelisk", "Cultist"]
 CultistStats =\
-[EnemyData("Obelisk", 0, 0, 0, 0, 10, 0, [], [["One With Nature", 0], ["Faith-fueled", 30], ["Conduit Of Faith", 0]], [["The Calling"]], [], [], [],\
+[EnemyData("Obelisk", 0, 0, 0, 0, 10, 0, [], [["One With Nature", 0], ["Faith-fueled", 30], ["Conduit Of Faith", 0]], [["The Calling", 0]], [], [], [],\
 ["none"],\
 [["Nope", 1], ["Coins", 30]],\
 "The Obelisk whispers...", True, False),

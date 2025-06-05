@@ -1,6 +1,6 @@
 from ui import generateWindow, generateStatusWindow, generateBagWindow, generateOSScreen,\
 setPosition, choose, updateProgressBar, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
-generateShopWindow
+generateShopWindow, effectNumber, getCenterCoords, animlocateFrame, animAdd, animStart, animRun
 from player import PlayerData, classes, classList
 from enemy import EnemyData, enemyStats, enemyName
 from level import LevelData, combatZone1, combatZone0
@@ -10,6 +10,7 @@ from traits import TraitData, traitName, traitList, pirateTraitList, dissectorTr
 ravenTraitList, shamanTraitList, bardTraitList
 from item import ItemData, itemName, itemList
 from upgrades import upgradeTable
+from animchart import animName, animList
 
 from pyodide.ffi import create_proxy # type: ignore
 from dataclasses import asdict
@@ -721,8 +722,11 @@ def Effect(user, target, name, info, cost):
                 for j in traitInfo.info:
                     if j[0] == "onDamage":
                         traitEffect(user, target, traitInfo, j, "onDamage")
+
             if next((s for s in target.status if s[0] == "BLEED"), [0, 0, 0])[1] > 0:
                 applyStatus(user, target, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+            if next((s for s in target.status if s[0] == "FAITH"), [0, 0, 0])[1] > 0:
+                applyStatus(user, target, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False)
 
             thorns = next((s for s in target.specialStats if s[0] == "thorns"), [0, 0, 0])[1]
             if thorns > 0:
@@ -771,6 +775,8 @@ def Effect(user, target, name, info, cost):
 
             if next((s for s in user.status if s[0] == "BLEED"), [0, 0, 0])[1] > 0:
                 applyStatus(user, user, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+            if next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0])[1] > 0:
+                applyStatus(user, user, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False)
         if info[i] == "heal":
             info = updateInfo(info, i, 3, target, user, name)
             healBonus = next((s for s in user.specialStats if s[0] == "HEALBONUS"), [0, 0, 0])[1]
@@ -913,7 +919,7 @@ def Effect(user, target, name, info, cost):
         if info[i] == "useSkill":
             info = updateInfo(info, i, 2, target, user, name)
             if isinstance(info[i + 1], int):
-                idk = user.skills[info[i + 1]]
+                idk = user.skills[info[i + 1]][0]
             else:
                 idk = info[i + 1]
             mates = partyList + summonList if isinstance (user, PlayerData) else enemyList
@@ -1195,7 +1201,6 @@ def hurt(user, target, damage):
         updateHp(target, -damage)
         allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
         recordingLastDamage[allEntities.index(target)] = damage
-        Narrate(f"{target.id} takes {damage} damage!")
         carrier = next((s for s in target.status if s[0] == "SWARM"), [0, 0, 0, 0])[1]
         for i in range(len(target.traits)):
             traitInfo = traitList[traitName.index(target.traits[i][0])]
@@ -1227,7 +1232,6 @@ def heal(user, target, heal):
                 hoi = True
     if not hoi:
         updateHp(target, heal)
-        Narrate(f"{user.id} heals {target.id} for {heal}!")
 
 def updateHp(target, hp):
     
@@ -1347,7 +1351,7 @@ def deathCheck(killer):
             for k in traitInfo.info:
                 if k[0] == "invulnerable":
                     hoi = True
-        if carrier[i].alive or not hoi:
+        if carrier[i].alive and (not hoi):
             alive += 1
     if alive == 0:
         combatEnd = True
@@ -1633,4 +1637,5 @@ def Buy(item, itemDiv, vendor):
             print("hi")
         itemDiv.remove()
 
+effectNumber(100, 100, 100, "")
 asyncio.ensure_future(Main())

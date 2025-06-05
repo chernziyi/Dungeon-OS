@@ -4,8 +4,8 @@ from traits import traitName, traitList
 from item import itemName, itemList
 
 from html import escape
-from js import document, requestAnimationFrame, window, setTimeout
-import random, asyncio, re, math, copy
+from js import document, requestAnimationFrame, window, setTimeout, setInterval, clearInterval
+import random, asyncio, re, math, copy, threading
 from pyodide.ffi import create_proxy  # type: ignore
 from pyodide.http import pyfetch # type: ignore
 
@@ -14,16 +14,286 @@ placeholder_counter = 0
 
 NotificationNumber = 0
 
+animQueue = []
+animRunning = False
+animEnded = True
+animCounter = 0
+
 def clearDiv(div):
     document.getElementById(div).innerHTML = ""
 
 def hideDiv(div):
     document.getElementById(div).style.visibility = "hidden"
 
+def getCenterCoords(div):
+    rect = div.getBoundingClientRect()
+
+    centerX = rect.left + rect.width / 2
+    centerY = rect.top + rect.height / 2
+
+    return centerX, centerY
+
 def updateProgressBar(bar, percent):
     if percent <= 0:
         percent = 0
     bar.style.setProperty("--progress", f"{percent * 100}%")
+
+def setPosition(div, positionX, positionY, override):
+    ui = document.getElementById(div)
+    if not ui:
+        return
+
+    if override == "center":
+        def centerDiv():
+            rect = ui.getBoundingClientRect()
+            window_width = window.innerWidth
+            window_height = window.innerHeight
+
+            ui.style.position = "absolute"
+            ui.style.left = f"{(window_width - rect.width) / 2}px"
+            ui.style.top = f"{(window_height - rect.height) / 2}px"
+
+        window.requestAnimationFrame(create_proxy(lambda *_: centerDiv()))
+    else:
+        def positionDiv():
+            ui.style.position = "absolute"
+            ui.style.left = positionX
+            ui.style.top = positionY
+
+        window.requestAnimationFrame(create_proxy(lambda *_: positionDiv()))
+
+def addText(div, name, text):
+    textbox = document.createElement("div")
+    textbox.id = name
+    textbox.innerHTML = text
+    div.appendChild(textbox)
+
+def addDescription(div, text, description):
+    originalText = div.innerHTML
+    newText = originalText.replace(text, f'<span class="hoverWrapper"><span class="hoverText">{text}</span><span class="descriptionWindow">{description.innerHTML}</span></span>')
+    div.innerHTML = newText
+
+def addDescriptionToImage(div, imageAltText, link, description):
+    div.innerHTML = ""
+
+    wrapper = document.createElement("span")
+    wrapper.className = "hoverWrapper"
+
+    img = document.createElement("img")
+    img.id = "image"
+    img.src = link
+    img.alt = imageAltText
+    img.className = "hoverText"
+    wrapper.appendChild(img)
+
+    descSpan = document.createElement("span")
+    descSpan.className = "descriptionWindow"
+    descSpan.appendChild(description)
+    wrapper.appendChild(descSpan)
+
+    div.appendChild(wrapper)
+
+def addBar(div, name, barMax, barValue, color):
+    if barMax == 0:
+        barMax = 1
+    barFrame = document.createElement("div")
+    barFrame.id = f"{name}BarFrame"
+    barFrame.className = "progressBarFrame"
+    div.appendChild(barFrame)
+
+    bar = document.createElement("div")
+    bar.id = f"{name}Bar"
+    bar.className = "progressBar"
+    bar.style.backgroundColor = color
+    updateProgressBar(bar, barValue / barMax)
+    barFrame.appendChild(bar)
+
+def addHp(div, subject):
+    hpWindow = document.createElement("div")
+    hpWindow.id = "hpWindow"
+    hpWindow.className = "windowBody"
+    div.appendChild(hpWindow)
+
+    addText(hpWindow, "hp", f"HP: {subject.hp} / {subject.maxhp}")
+    addBar(hpWindow, "hp", subject.maxhp, subject.hp, "#b32d2d")
+
+def addJuice(div, subject):
+    juiceWindow = document.createElement("div")
+    juiceWindow.id = "juiceWindow"
+    juiceWindow.className = "windowBody"
+    div.appendChild(juiceWindow)
+
+    addText(juiceWindow, "juice", f"JUICE: {subject.juice} / {subject.maxjuice}")
+    addBar(juiceWindow, "juice", subject.maxjuice, subject.juice, "#2d4eb3")
+
+def addTitle(div, titleName, X, future, secondaryButton):
+    screen = document.getElementById(div)
+
+    if not screen:
+        screen = document.createElement("div")
+        screen.id = div
+        document.body.appendChild(screen)
+    else:
+        screen.style.display = ""
+        screen.innerHTML = ""
+
+    title = document.createElement("div")
+    title.className = "title"
+    screen.appendChild(title)
+
+    titleText = document.createElement("div")
+    titleText.className = "titleText"
+    titleText.innerHTML = titleName
+    title.appendChild(titleText)
+
+    titleControls = document.createElement("div")
+    titleControls.className = "titleControls"
+    title.appendChild(titleControls)
+
+    offsetX, offsetY = 0, 0
+    dragging = {"active": False}
+    currentX, currentY = screen.style.left, screen.style.top
+
+    def pointerdown(e):
+        if e.target.className != "titleButton":
+            dragging["active"] = True
+            title.setPointerCapture(e.pointerId)
+            nonlocal offsetX, offsetY
+            offsetX = e.clientX - screen.getBoundingClientRect().left
+            offsetY = e.clientY - screen.getBoundingClientRect().top
+
+    def pointermove(e):
+        nonlocal currentX, currentY
+        if dragging["active"]:
+            currentX = e.clientX - offsetX
+            currentY = e.clientY - offsetY
+
+    def pointerup(e):
+        dragging["active"] = False
+        title.releasePointerCapture(e.pointerId)
+
+    proxies = []
+    if X:
+        xButton = document.createElement("button")
+        xButton.innerHTML = "X"
+        xButton.className = "titleButton"
+        xButton.setAttribute("aria-label", "Close")
+
+        def onClick(event=None):
+            event.stopPropagation()
+            if future is not None:
+                if not future.done():
+                    future.set_result("Exit")
+                for i in proxies:
+                    i.destroy()
+            screen.style.visibility = "hidden"
+
+        proxyClickX = create_proxy(onClick)
+        xButton.addEventListener("click", proxyClickX)
+        titleControls.appendChild(xButton)
+        proxies.append(proxyClickX)
+    
+    if secondaryButton:
+        button2 = document.createElement("button")
+        button2.className = "titleButton"
+        button2.id = "button2"
+        button2.setAttribute("aria-label", "Close")
+        titleControls.appendChild(button2)
+
+    def animate(timestamp=None):
+        if dragging["active"]:
+            screen.style.left = f"{currentX}px"
+            screen.style.top = f"{currentY}px"
+        requestAnimationFrame(create_proxy(animate))
+
+    proxyDown = create_proxy(pointerdown)
+    title.addEventListener("pointerdown", proxyDown)
+    proxies.append(proxyDown)
+    proxyMove = create_proxy(pointermove)
+    screen.addEventListener("pointermove", proxyMove)
+    proxies.append(proxyMove)
+    proxyUp = create_proxy(pointerup)
+    screen.addEventListener("pointerup", proxyUp)
+    proxies.append(proxyUp)
+
+    requestAnimationFrame(create_proxy(animate))
+
+    # Return proxies for cleanup
+    return proxies
+
+def animlocateFrame(anim):
+    global animQueue
+    idk = False
+    for i in animQueue:
+        for j in i:
+            if j == anim:
+                return animQueue.index(i)
+            idk = True
+    return None
+
+def animAdd(anim, frame):
+    if animQueue[frame]:
+        animQueue[frame].append(anim)
+    else:
+        animQueue.insert(frame, [anim])
+
+def animStart():
+    global animEnded
+    if animEnded == True and len(animQueue) > 0:
+        animEnded = False
+        animRun()
+        
+def animRun():
+    global animQueue, animEnded
+
+    if len(animQueue) == 0:
+        animEnded = True
+        return
+
+    currentFrame = animQueue.pop(0)  # get and remove first frame
+    remaining = len(currentFrame)
+
+    if remaining == 0:
+        return
+
+    def oneDone():
+        nonlocal remaining
+        remaining -= 1
+        if remaining == 0:
+            animRun()  # go to next frame
+
+    # Start each anim, passing in one_done callback
+    for animFunc in currentFrame:
+        animFunc(oneDone)
+
+def effectNumber(number, div, color, duration):
+    def anim(done):
+        # Create the element
+        x, y = getCenterCoords(div)
+        effectDiv = document.createElement("div")
+        effectDiv.className = "effectNumber"
+        effectDiv.textContent = str(number)
+        effectDiv.style.position = "absolute"
+        effectDiv.style.left = f"{x}px"
+        effectDiv.style.top = f"{y}px"
+        effectDiv.style.color = color
+        document.body.appendChild(effectDiv)
+
+        # Clean up after 1 second
+        def cleanup():
+            if effectDiv.parentNode:
+                effectDiv.remove()
+            done()  # Tell the animation manager we're done
+
+        setTimeout(cleanup, duration)
+    return anim
+
+def replaceImage(div, imageLink, duration):
+    def anim(done):
+        imageDiv = div.querySelector("#image")
+        imageDiv.src = imageLink
+        setTimeout(done, duration)
+    return anim
 
 def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
     hoi = False 
@@ -276,188 +546,6 @@ def generateStatusWindow(subject, faction):
             addDescription(statWindow.querySelector("#equipment"), i, placeholder)
 
     screen.style.visibility = ""
-
-def setPosition(div, positionX, positionY, override):
-    ui = document.getElementById(div)
-    if not ui:
-        return
-
-    if override == "center":
-        def centerDiv():
-            rect = ui.getBoundingClientRect()
-            window_width = window.innerWidth
-            window_height = window.innerHeight
-
-            ui.style.position = "absolute"
-            ui.style.left = f"{(window_width - rect.width) / 2}px"
-            ui.style.top = f"{(window_height - rect.height) / 2}px"
-
-        window.requestAnimationFrame(create_proxy(lambda *_: centerDiv()))
-    else:
-        def positionDiv():
-            ui.style.position = "absolute"
-            ui.style.left = positionX
-            ui.style.top = positionY
-
-        window.requestAnimationFrame(create_proxy(lambda *_: positionDiv()))
-
-def addText(div, name, text):
-    textbox = document.createElement("div")
-    textbox.id = name
-    textbox.innerHTML = text
-    div.appendChild(textbox)
-
-def addDescription(div, text, description):
-    originalText = div.innerHTML
-    newText = originalText.replace(text, f'<span class="hoverWrapper"><span class="hoverText">{text}</span><span class="descriptionWindow">{description.innerHTML}</span></span>')
-    div.innerHTML = newText
-
-def addDescriptionToImage(div, imageAltText, link, description):
-    div.innerHTML = ""
-
-    wrapper = document.createElement("span")
-    wrapper.className = "hoverWrapper"
-
-    img = document.createElement("img")
-    img.src = link
-    img.alt = imageAltText
-    img.className = "hoverText"
-    wrapper.appendChild(img)
-
-    descSpan = document.createElement("span")
-    descSpan.className = "descriptionWindow"
-    descSpan.appendChild(description)
-    wrapper.appendChild(descSpan)
-
-    div.appendChild(wrapper)
-
-def addBar(div, name, barMax, barValue, color):
-    if barMax == 0:
-        barMax = 1
-    barFrame = document.createElement("div")
-    barFrame.id = f"{name}BarFrame"
-    barFrame.className = "progressBarFrame"
-    div.appendChild(barFrame)
-
-    bar = document.createElement("div")
-    bar.id = f"{name}Bar"
-    bar.className = "progressBar"
-    bar.style.backgroundColor = color
-    updateProgressBar(bar, barValue / barMax)
-    barFrame.appendChild(bar)
-
-def addHp(div, subject):
-    hpWindow = document.createElement("div")
-    hpWindow.id = "hpWindow"
-    hpWindow.className = "windowBody"
-    div.appendChild(hpWindow)
-
-    addText(hpWindow, "hp", f"HP: {subject.hp} / {subject.maxhp}")
-    addBar(hpWindow, "hp", subject.maxhp, subject.hp, "#b32d2d")
-
-def addJuice(div, subject):
-    juiceWindow = document.createElement("div")
-    juiceWindow.id = "juiceWindow"
-    juiceWindow.className = "windowBody"
-    div.appendChild(juiceWindow)
-
-    addText(juiceWindow, "juice", f"JUICE: {subject.juice} / {subject.maxjuice}")
-    addBar(juiceWindow, "juice", subject.maxjuice, subject.juice, "#2d4eb3")
-
-def addTitle(div, titleName, X, future, secondaryButton):
-    screen = document.getElementById(div)
-
-    if not screen:
-        screen = document.createElement("div")
-        screen.id = div
-        document.body.appendChild(screen)
-    else:
-        screen.style.display = ""
-        screen.innerHTML = ""
-
-    title = document.createElement("div")
-    title.className = "title"
-    screen.appendChild(title)
-
-    titleText = document.createElement("div")
-    titleText.className = "titleText"
-    titleText.innerHTML = titleName
-    title.appendChild(titleText)
-
-    titleControls = document.createElement("div")
-    titleControls.className = "titleControls"
-    title.appendChild(titleControls)
-
-    offsetX, offsetY = 0, 0
-    dragging = {"active": False}
-    currentX, currentY = screen.style.left, screen.style.top
-
-    def pointerdown(e):
-        if e.target.className != "titleButton":
-            dragging["active"] = True
-            title.setPointerCapture(e.pointerId)
-            nonlocal offsetX, offsetY
-            offsetX = e.clientX - screen.getBoundingClientRect().left
-            offsetY = e.clientY - screen.getBoundingClientRect().top
-
-    def pointermove(e):
-        nonlocal currentX, currentY
-        if dragging["active"]:
-            currentX = e.clientX - offsetX
-            currentY = e.clientY - offsetY
-
-    def pointerup(e):
-        dragging["active"] = False
-        title.releasePointerCapture(e.pointerId)
-
-    proxies = []
-    if X:
-        xButton = document.createElement("button")
-        xButton.innerHTML = "X"
-        xButton.className = "titleButton"
-        xButton.setAttribute("aria-label", "Close")
-
-        def onClick(event=None):
-            event.stopPropagation()
-            if future is not None:
-                if not future.done():
-                    future.set_result("Exit")
-                for i in proxies:
-                    i.destroy()
-            screen.style.visibility = "hidden"
-
-        proxyClickX = create_proxy(onClick)
-        xButton.addEventListener("click", proxyClickX)
-        titleControls.appendChild(xButton)
-        proxies.append(proxyClickX)
-    
-    if secondaryButton:
-        button2 = document.createElement("button")
-        button2.className = "titleButton"
-        button2.id = "button2"
-        button2.setAttribute("aria-label", "Close")
-        titleControls.appendChild(button2)
-
-    def animate(timestamp=None):
-        if dragging["active"]:
-            screen.style.left = f"{currentX}px"
-            screen.style.top = f"{currentY}px"
-        requestAnimationFrame(create_proxy(animate))
-
-    proxyDown = create_proxy(pointerdown)
-    title.addEventListener("pointerdown", proxyDown)
-    proxies.append(proxyDown)
-    proxyMove = create_proxy(pointermove)
-    screen.addEventListener("pointermove", proxyMove)
-    proxies.append(proxyMove)
-    proxyUp = create_proxy(pointerup)
-    screen.addEventListener("pointerup", proxyUp)
-    proxies.append(proxyUp)
-
-    requestAnimationFrame(create_proxy(animate))
-
-    # Return proxies for cleanup
-    return proxies
 
 async def choose(options, div, title, content, Exit):
     global future
