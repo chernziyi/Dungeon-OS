@@ -1,33 +1,28 @@
 {
     "party": [
         {
-            "id": "Pirate",
-            "classId": "Pirate",
+            "id": "Dissector",
+            "classId": "Dissector",
             "hp": 100,
             "maxhp": 100,
-            "juice": 10,
-            "maxjuice": 10,
-            "strength": 7,
-            "defense": 2,
-            "speed": 5,
+            "juice": 15,
+            "maxjuice": 15,
+            "strength": 5,
+            "defense": 3,
+            "speed": 6,
             "counter": 0,
-            "specialStats": [
-                [
-                    "MAX AMMO",
-                    1
-                ]
-            ],
+            "specialStats": [],
             "traits": [],
             "skills": [
                 [
-                    "Pistol Shot",
+                    "Bloody Jabs",
                     0
                 ]
             ],
             "status": [],
             "equipment": [],
             "equipmentSlots": 2,
-            "attackText": "user gives out a taste of their cutlass!",
+            "attackText": "user does some on-site practice!",
             "alive": true
         },
         {

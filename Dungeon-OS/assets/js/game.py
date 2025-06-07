@@ -1,6 +1,7 @@
 from ui import generateWindow, generateStatusWindow, generateBagWindow, generateOSScreen,\
-setPosition, choose, updateProgressBar, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
-generateShopWindow, effectNumber, getCenterCoords, animlocateFrame, animAdd, animStart, animRun, animLoad, updateHp, updateJuice
+setPosition, choose, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
+generateShopWindow, effectNumber, animlocateFrame, animAdd, animStart, animLoad, updateHp, updateJuice, animSeekAndDestroy,\
+WaitForAnimFinished
 from player import PlayerData, classes, classList
 from enemy import EnemyData, enemyStats, enemyName
 from level import LevelData, combatZone1, combatZone0
@@ -307,9 +308,10 @@ async def endOfCombat():
     for i in range(len(partyList)):
         clone = cloneParty[party.index(partyList[i])]
         visual = allVisuals[allEntities.index(partyList[i])]
-        partyList[i] = PlayerData(partyList[i].id, partyList[i].classId, partyList[i].hp, clone.maxhp, clone.juice,\
+        placeholder = PlayerData(partyList[i].id, partyList[i].classId, partyList[i].hp, clone.maxhp, clone.juice,\
         clone.maxjuice, clone.strength, clone.defense, clone.speed, clone.counter, clone.specialStats,\
         clone.traits, clone.skills, clone.status, clone.equipment, clone.equipmentSlots, clone.attackText, partyList[i].alive)
+        partyList[i].load_from(placeholder)
         visual.load_from(partyList[i])
 
     for i in range(len(currentLevel.enemyRoster)):
@@ -424,6 +426,8 @@ def speedSort():
 async def Combat(nextTurn):
     global combatOrder, currentLevel, override, cantrip, state, combatant
     state = "combat"
+
+    await WaitForAnimFinished()
 
     if not combatEnd:
         if nextTurn:
@@ -1043,6 +1047,9 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
 
         if buffDataCollecting:
             buffData.append(info[i])
+        
+        if info[i] in ["damage", "bleed"]:
+            animSeekAndDestroy(respectiveAnimName, info[i])
 
 def updateInfo(info, startingNumber, total, target, user, name):
     for i in range(total):
@@ -1397,9 +1404,7 @@ def enemyIntent(idk):
             intent = idk.skills[random.choice(chart[chart.index("notSummon") + 1])][0]
             decided = True
     if "hpBelow" in chart:
-        print("hpBelow")
         if idk.hp <= idk.maxhp * chart[chart.index("hpBelow") + 1]:
-            print("High")
             intent = idk.skills[random.choice(chart[chart.index("hpBelow") + 2])][0]
             decided = True
     if decided == False:

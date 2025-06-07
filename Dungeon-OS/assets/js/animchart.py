@@ -20,10 +20,14 @@ pirateAnimUseSkillList =\
 pirateAnimName = pirateAnimUseSkillName
 pirateAnimList = pirateAnimUseSkillList
 
-dissectorAnimName =\
-[]
-dissectorAnimList =\
-[]
+dissectorAnimUseSkillName =\
+["DissectorUseSkillBloody Jabs"]
+dissectorAnimUseSkillList =\
+[AnimData("DissectorUseSkillBloody Jabs", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 200, ["damage", "bleed"]],\
+["replaceImage", "frame2", 200, ["damage", "bleed"]], ["replaceImage", "frame2", 200, ["damage", "bleed"]]])]
+
+dissectorAnimName = dissectorAnimUseSkillName
+dissectorAnimList = dissectorAnimUseSkillList
 
 qiMasterAnimName =\
 []

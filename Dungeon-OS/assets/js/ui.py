@@ -222,6 +222,10 @@ def addTitle(div, titleName, X, future, secondaryButton):
     # Return proxies for cleanup
     return proxies
 
+async def WaitForAnimFinished():
+    while animRunning:
+        await asyncio.sleep(0.05)
+
 def animLoad(animName, info, div, frame):
     global animStorage, animKeyFrames
     if info[0] == "replaceImage":
@@ -244,6 +248,14 @@ def animlocateFrame(animName, keyframe):
                 return animQueue.index(i)
     if idk == False:
         return None
+
+def animSeekAndDestroy(animName, keyframe):
+    global animKeyFrames
+    for i in animKeyFrames:
+        if i[0] == animName and keyframe in i[1]:
+            i[1].remove(keyframe)
+            print(animKeyFrames)            
+            break
 
 def animAdd(anim, frame, insertNewFrame):
     global animQueue
@@ -299,8 +311,7 @@ def updateHp(target, hp):
                 updateProgressBar(hpBarDiv, 0)
             else:
                 updateProgressBar(hpBarDiv, target.hp / target.maxhp)
-        done()
-        setTimeout(create_proxy(done), 0)
+        setTimeout(create_proxy(lambda: done()), 0)
     return anim
     
 def updateJuice(target, juice):
@@ -317,8 +328,7 @@ def updateJuice(target, juice):
             updateProgressBar(juiceBarDiv, 0)
         else:
             updateProgressBar(juiceBarDiv, target.juice / target.maxjuice)
-        done()
-        setTimeout(create_proxy(done), 0)
+        setTimeout(create_proxy(lambda: done()), 0)
     return anim
 
 def effectNumber(number, div, color, duration):
@@ -333,11 +343,12 @@ def effectNumber(number, div, color, duration):
         effectDiv.style.color = color
         document.body.appendChild(effectDiv)
 
+        setTimeout(create_proxy(lambda: done()), duration)
+
         def cleanup():
             if effectDiv.parentNode:
                 effectDiv.remove()
-            done()
-        setTimeout(create_proxy(cleanup), duration)
+        setTimeout(create_proxy(lambda: cleanup()), duration)
     return anim
 
 def replaceImage(div, imageLink, duration):
@@ -345,8 +356,7 @@ def replaceImage(div, imageLink, duration):
         #imageDiv = div.querySelector("#image")
         #imageDiv.src = imageLink
         print(imageLink)
-        done()
-        setTimeout(create_proxy(done), duration)
+        setTimeout(create_proxy(lambda: done()), duration)
     return anim
 
 def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
