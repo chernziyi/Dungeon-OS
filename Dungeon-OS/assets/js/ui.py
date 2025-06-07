@@ -15,9 +15,10 @@ placeholder_counter = 0
 NotificationNumber = 0
 
 animQueue = []
+animStorage = []
+animKeyFrames = []
 animRunning = False
 animEnded = True
-animCounter = 0
 
 def clearDiv(div):
     document.getElementById(div).innerHTML = ""
@@ -221,54 +222,107 @@ def addTitle(div, titleName, X, future, secondaryButton):
     # Return proxies for cleanup
     return proxies
 
-def animlocateFrame(anim):
-    global animQueue
+def animLoad(animName, info, div, frame):
+    global animStorage, animKeyFrames
+    if info[0] == "replaceImage":
+        anim = replaceImage(div, info[1], info[2])
+        animAdd(anim, frame, True)
+        animStorage.append(anim)
+        animKeyFrames.append([animName, info[3]])
+
+def animlocateFrame(animName, keyframe):
+    print("info", animKeyFrames, animStorage, animQueue)
+    for i in animKeyFrames:
+        if i[0] == animName and keyframe in i[1]:
+            anim = animStorage[animKeyFrames.index(i)]
+            break
     idk = False
     for i in animQueue:
         for j in i:
             if j == anim:
+                idk = True
                 return animQueue.index(i)
-            idk = True
-    return None
+    if idk == False:
+        return None
 
-def animAdd(anim, frame):
-    if animQueue[frame]:
-        animQueue[frame].append(anim)
-    else:
+def animAdd(anim, frame, insertNewFrame):
+    global animQueue
+    if insertNewFrame:
         animQueue.insert(frame, [anim])
-
+    else:
+        animQueue[frame].append(anim)
+        
 def animStart():
-    global animEnded
+    global animEnded, animStorage, animKeyFrames, animRunning
     if animEnded == True and len(animQueue) > 0:
         animEnded = False
+        animRunning = True
         animRun()
         
 def animRun():
-    global animQueue, animEnded
+    global animQueue, animEnded, animStorage, animKeyFrames, animRunning
 
     if len(animQueue) == 0:
+        print("Hiyer")
         animEnded = True
+        animRunning = False
+        animStorage = []
+        animKeyFrames = []
         return
 
     currentFrame = animQueue.pop(0)  # get and remove first frame
     remaining = len(currentFrame)
 
-    if remaining == 0:
-        return
-
     def oneDone():
         nonlocal remaining
         remaining -= 1
         if remaining == 0:
-            animRun()  # go to next frame
+            animRun()
+            return  # go to next frame
 
     # Start each anim, passing in one_done callback
     for animFunc in currentFrame:
-        animFunc(oneDone)
+        animFunc(oneDone)   
+
+def updateHp(target, hp): 
+    def anim(done):
+        characterDiv = document.getElementById(target.id)
+        hpDiv = characterDiv.querySelector("#hp")
+        if hpDiv:
+            target.hp += hp
+            if target.hp > target.maxhp:
+                target.hp = target.maxhp
+            hpDiv.innerHTML = f"HP: {target.hp} / {target.maxhp}"
+
+            hpBarDiv = characterDiv.querySelector("#hpBar")
+            if target.maxhp == 0:
+                updateProgressBar(hpBarDiv, 0)
+            else:
+                updateProgressBar(hpBarDiv, target.hp / target.maxhp)
+        done()
+        setTimeout(create_proxy(done), 0)
+    return anim
+    
+def updateJuice(target, juice):
+    def anim(done):
+        target.juice += juice
+        if target.juice > target.maxjuice:
+            target.juice = target.maxjuice
+        characterDiv = document.getElementById(target.id)
+        juiceDiv = characterDiv.querySelector("#juice")
+        juiceDiv.innerHTML = f"JUICE: {target.juice} / {target.maxjuice}"
+
+        juiceBarDiv = characterDiv.querySelector("#juiceBar")
+        if target.maxjuice == 0:
+            updateProgressBar(juiceBarDiv, 0)
+        else:
+            updateProgressBar(juiceBarDiv, target.juice / target.maxjuice)
+        done()
+        setTimeout(create_proxy(done), 0)
+    return anim
 
 def effectNumber(number, div, color, duration):
     def anim(done):
-        # Create the element
         x, y = getCenterCoords(div)
         effectDiv = document.createElement("div")
         effectDiv.className = "effectNumber"
@@ -279,20 +333,20 @@ def effectNumber(number, div, color, duration):
         effectDiv.style.color = color
         document.body.appendChild(effectDiv)
 
-        # Clean up after 1 second
         def cleanup():
             if effectDiv.parentNode:
                 effectDiv.remove()
-            done()  # Tell the animation manager we're done
-
-        setTimeout(cleanup, duration)
+            done()
+        setTimeout(create_proxy(cleanup), duration)
     return anim
 
 def replaceImage(div, imageLink, duration):
     def anim(done):
-        imageDiv = div.querySelector("#image")
-        imageDiv.src = imageLink
-        setTimeout(done, duration)
+        #imageDiv = div.querySelector("#image")
+        #imageDiv.src = imageLink
+        print(imageLink)
+        done()
+        setTimeout(create_proxy(done), duration)
     return anim
 
 def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
@@ -309,7 +363,6 @@ def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
         for j in traitInfo.info:
             if j[0] == "invulnerable":
                 hoi = True
-    print(hoi)
 
     if not hoi:  
         addHp(screen, subject)

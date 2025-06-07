@@ -1,6 +1,6 @@
 from ui import generateWindow, generateStatusWindow, generateBagWindow, generateOSScreen,\
 setPosition, choose, updateProgressBar, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
-generateShopWindow, effectNumber, getCenterCoords, animlocateFrame, animAdd, animStart, animRun
+generateShopWindow, effectNumber, getCenterCoords, animlocateFrame, animAdd, animStart, animRun, animLoad, updateHp, updateJuice
 from player import PlayerData, classes, classList
 from enemy import EnemyData, enemyStats, enemyName
 from level import LevelData, combatZone1, combatZone0
@@ -29,6 +29,11 @@ player2 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", 
 player3 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
 player4 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
 
+playerVisual1 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
+playerVisual2 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
+playerVisual3 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
+playerVisual4 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
+
 clone1 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
 clone2 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
 clone3 = PlayerData("", "", 0, 0, 0, 0, 0, 0, 0, 0, [], [], [], [], [], 0, "", False)
@@ -44,6 +49,11 @@ summon2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", Tr
 summon3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 summon4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
+summonVisual1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+
 summonParty = [None, summon1, summon2, summon3, summon4]
 
 enemyNumber = 0
@@ -53,10 +63,19 @@ enemy2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", Tru
 enemy3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 enemy4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
+enemyVisual1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+
 enemyParty = [None, enemy1, enemy2, enemy3, enemy4]
 
 allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
+allVisuals = [playerVisual1, playerVisual2, playerVisual3, playerVisual4, summonVisual1, summonVisual2, summonVisual3, summonVisual4,\
+enemyVisual1, enemyVisual2, enemyVisual3, enemyVisual4]
 recordingLastDamage = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+statusStacksApplied = 0
 
 bag = []
 lastSwap = ["", ""]
@@ -98,7 +117,7 @@ targetables = []
 summonFaction = ""
 swarm = False
 
-statusStacksApplied = 0
+animFrame = 0
 
 async def Main():
     setPosition("Choice.exe", "0px", "0px", "center")
@@ -128,14 +147,17 @@ async def classgen(number):
     state = ""
 
 def addCharacter(idk):
-    global partyList, partyNumber, allEntities
+    global partyList, partyNumber, allEntities, allVisuals, playerVisual1, playerVisual2, playerVisual3, playerVisual4
     partyNumber += 1
 
     player = party[partyNumber]
     player.load_from(idk)
     partyList.append(player)
 
-    generateWindow(player, "player", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
+    playerVisual = allVisuals[allEntities.index(player)]
+    playerVisual.load_from(player)
+
+    generateWindow(playerVisual, "player", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
     screen = document.getElementById(player.id)
     def addStatus():
         statusButton = screen.querySelector("#button2")
@@ -152,8 +174,8 @@ def addCharacter(idk):
     
     setTimeout(create_proxy(addStatus), 0)
 
-async def addEnemy(idk):
-    global enemyList, enemyNumber, swarm, summonFaction, allEntities
+def addEnemy(idk):
+    global enemyList, enemyNumber, swarm, summonFaction, allEntities, allVisuals, enemyVisual1, enemyVisual2, enemyVisual3, enemyVisual4
 
     enemyData = enemyStats[enemyName.index(idk)]
 
@@ -179,7 +201,9 @@ async def addEnemy(idk):
                 traitEffect(enemyData, enemyData, traitInfo, j, "onSummon")
     
     if not swarm:
-        generateWindow(enemy, "enemy", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
+        enemyVisual = allVisuals[allEntities.index(enemy)]
+        enemyVisual.load_from(enemy)
+        generateWindow(enemyVisual, "enemy", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
         screen = document.getElementById(enemy.id)
         def addStatus():
             statusButton = screen.querySelector("#button2")
@@ -200,7 +224,48 @@ async def addEnemy(idk):
         enemyNumber -= 1
         enemyList.remove(enemy)
 
-    updateHp(next((s for s in enemyList if s.id == enemyData.id), None), 0)
+def addSummon(summoner, idk):
+    global summonList, summonNumber, swarm, summonFaction, allEntities, allVisuals, summonVisual1, summonVisual2, summonVisual3, summonVisual4
+    summonData = enemyStats[enemyName.index(idk)]
+
+    summonNumber += 1
+    swarm = False
+    summonFaction = "summon"
+
+    summon = summonParty[summonNumber]
+    summon.load_from(summonData)
+    summon.counter = summoner.counter
+    summon.summon = True
+    summonList.append(summon)
+    for i in range(len(summonData.traits)):
+        traitInfo = traitList[traitName.index(summonData.traits[i][0])]
+        for j in traitInfo.info:
+            if j[0] == "onSummon":
+                traitEffect(summonData, summonData, traitInfo, j, "onSummon")
+    
+    if not swarm:
+        summonVisual = allVisuals[allEntities.index(summon)]
+        summonVisual.load_from(summon)
+        generateWindow(summonVisual, "summon", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
+        screen = document.getElementById(summon.id)
+        def addStatus():
+            statusButton = screen.querySelector("#button2")
+            statusButton.innerHTML = "i"
+
+            if statusButton:
+                def onClick(event=None):
+                    print("hi")
+                    generateStatusWindow(next((s for s in summonList if s.id == summon.id)), "summon")
+                
+                proxyClickStatus = create_proxy(onClick)
+                statusButton.addEventListener("click", proxyClickStatus)
+            else:
+                print("where?")
+        
+        setTimeout(create_proxy(addStatus), 0)
+    else:
+        summonNumber -= 1
+        summonList.remove(summon)
 
 async def Hallway():
     global state, roomNumber
@@ -232,7 +297,7 @@ async def startOfCombat():
                 applyStatus(i, i, f"{trait.id}: Uses", j[1], 0, "", "", False)
 
 async def endOfCombat():
-    global bag, enemyList, summonList, player1, player2, player3, player4, enemyNumber, summonNumber
+    global bag, enemyList, summonList, player1, player2, player3, player4, enemyNumber, summonNumber, allEntities, allVisuals
 
     Narrate(f"The dust settles...")
 
@@ -241,14 +306,14 @@ async def endOfCombat():
 
     for i in range(len(partyList)):
         clone = cloneParty[party.index(partyList[i])]
+        visual = allVisuals[allEntities.index(partyList[i])]
         partyList[i] = PlayerData(partyList[i].id, partyList[i].classId, partyList[i].hp, clone.maxhp, clone.juice,\
         clone.maxjuice, clone.strength, clone.defense, clone.speed, clone.counter, clone.specialStats,\
         clone.traits, clone.skills, clone.status, clone.equipment, clone.equipmentSlots, clone.attackText, partyList[i].alive)
-        updateJuice(partyList[i], 0)
-        updateHp(partyList[i], 0)
+        visual.load_from(partyList[i])
 
     for i in range(len(currentLevel.enemyRoster)):
-        looted = enemyList(enemyName.index(currentLevel.enemyRoster[i]))
+        looted = enemyList[enemyName.index(currentLevel.enemyRoster[i])]
         Loot(looted, "-")
     
     removables = enemyList + summonList
@@ -305,11 +370,9 @@ async def upgrade(player, number):
     elif upgradeChosen[0] == "HP":
         player.maxhp += upgradeChosen[1]
         player.hp += upgradeChosen[1]
-        updateHp(player, 0)
     elif upgradeChosen[0] == "JUICE":
         player.maxjuice += upgradeChosen[1]
         player.juice += upgradeChosen[1]
-        updateJuice(player, 0)
     elif upgradeChosen[0] in ["ACCURACY", "HEALBONUS", "DODGE"]:
         applyStats(player, player, upgradeChosen[0].upper(), upgradeChosen[1])
     elif upgradeChosen[0] in traitName:
@@ -452,7 +515,7 @@ async def StartOfTurn(user):
 
     for i in range(len(carrier)):
         if carrier[i][0] == "BLEED":
-            hurt(user, user, carrier[i][1])
+            hurt(user, user, carrier[i][1], "bleed")
             if next((s for s in user.status if s[0] == "HEMOTOXIN"), [0, 0, 0])[1] > 0:
                 applyStatus(user, user, "HEMOTOXIN", 0, -1, "", "-", False)
             else:
@@ -612,11 +675,28 @@ async def useSkill(user, faction, skill):
                     traitEffect(target, user, traitInfo, k, "onEnemyUseSkill")
 
 def skillEffect(user, target, skillInfo, AOE):
-    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting
+    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, animFrame
+
+    userDiv = document.getElementById(user.id)
 
     buffData.clear()
     buffDataCollecting = False
     buffDuration = ""
+
+    if isinstance(user, PlayerData):
+        currentAnimName = f"{user.classId}UseSkill{skillInfo.id}"
+    elif isinstance(user, EnemyData):
+        currentAnimName = f"{user.id}UseSkill{skillInfo.id}"
+    
+    if currentAnimName in animName:
+        animChart = animList[animName.index(currentAnimName)]
+
+        for i in animChart.info:
+            print(i)
+            animLoad(currentAnimName, i, userDiv, animFrame)
+            animFrame += 1
+    else:
+        currentAnimName = None
 
     if infusion and skillCondition != "chant" and isinstance(user, PlayerData):
         updateJuice(user, -skillInfo.juiceCost)
@@ -639,7 +719,7 @@ def skillEffect(user, target, skillInfo, AOE):
                 dodge = next((s for s in target[i].specialStats if s[0] == "DODGE"), [0, 0, 0])[1]
                 accuracy = random.uniform(0, 1) + skillInfo.acc + (next((s for s in user.specialStats if s[0] == "ACCURACY"), [0, 0, 0])[1]) - dodge
                 if accuracy >= 1:
-                    Effect(user, target[i], skillInfo.id, skillInfo.info, skillInfo.juiceCost)         
+                    Effect(user, target[i], skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)  
                 else:
                     Narrate(f"{user.id} missed!")
                     for i in range(len(target.traits)):
@@ -652,9 +732,11 @@ def skillEffect(user, target, skillInfo, AOE):
             dodge = next((s for s in target.specialStats if s[0] == "dodge"), [0, 0, 0])[1]
             accuracy = random.uniform(0, 1) + skillInfo.acc + (next((s for s in user.specialStats if s[0] == "ACCURACY"), [0, 0, 0])[1]) - dodge
             if accuracy >= 1:
-                Effect(user, target, skillInfo.id, skillInfo.info, skillInfo.juiceCost)         
+                Effect(user, target, skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)         
             else:
                 Narrate(f"{user.id} missed!")
+    
+    animStart()
 
 def voiceline(user, target, name, useText, condition):
     if infusion:
@@ -666,7 +748,7 @@ def voiceline(user, target, name, useText, condition):
         voiceline = voiceline.replace("target", target.id)
         Narrate(f"{voiceline}")
 
-def Effect(user, target, name, info, cost):
+def Effect(user, target, name, info, cost, respectiveAnimName=None):
     global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, swarm
     userMates = partyList + summonList if user in partyList or summonList else enemyList
     userNotMates = enemyList if user in partyList or summonList else partyList + summonList
@@ -712,10 +794,9 @@ def Effect(user, target, name, info, cost):
             if damage <= 0:
                 damage = 1
             damage = math.ceil(damage)
-            hurt(user, target, damage)
+            hurt(user, target, damage, "damage", respectiveAnimName=respectiveAnimName)
             if info[i + 1] == "max":
                 target.maxhp -= damage
-                updateHp(target, 0)
 
             for i in range(len(user.traits)):
                 traitInfo = traitList[traitName.index(user.traits[i][0])]
@@ -768,10 +849,9 @@ def Effect(user, target, name, info, cost):
             if damage <= 0:
                 damage = 1
             damage = math.ceil(damage)
-            hurt(user, user, damage)
+            hurt(user, user, damage, "selfDamage", respectiveAnimName=respectiveAnimName)
             if info[i + 1] == "max":
                 user.maxhp -= damage
-                updateHp(user, 0)
 
             if next((s for s in user.status if s[0] == "BLEED"), [0, 0, 0])[1] > 0:
                 applyStatus(user, user, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
@@ -782,10 +862,9 @@ def Effect(user, target, name, info, cost):
             healBonus = next((s for s in user.specialStats if s[0] == "HEALBONUS"), [0, 0, 0])[1]
             if info[i + 2] == "max":
                 target.maxhp += info[i + 1] + healBonus
-                updateHp(target, 0)
             heal(user, target, info[i + 1] + healBonus)
         if info[i] == "die":
-            hurt(user, user, user.hp, name)
+            hurt(user, user, user.hp, "die", respectiveAnimName=respectiveAnimName)
         if info[i] == "ammo":
             info = updateInfo(info, i, 2, target, user, name)
             applyStatus(user, user, "AMMO", 0, info[i + 1], "", "-", False)
@@ -938,7 +1017,6 @@ def Effect(user, target, name, info, cost):
                 trait = traitList[traitName.index(j[0])]
                 if j[0] == name:
                     j[1] += info[i + 1]
-                    print(j[1])
                     for k in trait.info:
                         if k[0] == "onTrigger":
                             if not k[4] == "":
@@ -949,9 +1027,6 @@ def Effect(user, target, name, info, cost):
             info = updateInfo(info, i, 4, target, user, name)
             currentStacks = next((s for s in target.status if s[0] == info[i + 1]), [0, 0, 0, 0])[1]
             targetStacks = info[i + 3]
-            print(currentStacks)
-            print("NII")
-            print(targetStacks)
             if info[i + 2] == "reach":
                 if currentStacks < targetStacks:
                     break
@@ -1018,49 +1093,6 @@ def Buff(user, target, buffName, buffData, buffStacks, buffStatus):
         elif not buffDuration == "":
             applyStatus(user, target, buffName, 0, buffStacks, buffDuration, user.id, False)
 
-def addSummon(summoner, idk):
-    global summonList, summonNumber, swarm, summonFaction
-    summonData = enemyStats[enemyName.index(idk)]
-
-    summonNumber += 1
-    swarm = False
-    summonFaction = "summon"
-
-    summon = summonParty[summonNumber]
-    summon.load_from(summonData)
-    summon.counter = summoner.counter
-    summon.summon = True
-    summonList.append(summon)
-    for i in range(len(summonData.traits)):
-        traitInfo = traitList[traitName.index(summonData.traits[i][0])]
-        for j in traitInfo.info:
-            if j[0] == "onSummon":
-                traitEffect(summonData, summonData, traitInfo, j, "onSummon")
-    
-    if not swarm:
-        generateWindow(summon, "summon", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
-        screen = document.getElementById(summon.id)
-        def addStatus():
-            statusButton = screen.querySelector("#button2")
-            statusButton.innerHTML = "i"
-
-            if statusButton:
-                def onClick(event=None):
-                    print("hi")
-                    generateStatusWindow(next((s for s in summonList if s.id == summon.id)), "summon")
-                
-                proxyClickStatus = create_proxy(onClick)
-                statusButton.addEventListener("click", proxyClickStatus)
-            else:
-                print("where?")
-        
-        setTimeout(create_proxy(addStatus), 0)
-    else:
-        summonNumber -= 1
-        summonList.remove(summon)
-
-    updateHp(next((s for s in summonList if s.id == summonData.id), None), 0)
-
 def applyStatus(user, target, status, stacks, stacksChange, duration, text, replaceOriginal):
     global override, overrideContext, skillCondition, buffDataCollecting, statusStacksApplied
 
@@ -1094,7 +1126,7 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         skillCondition = "chant"
     
     if status == "PLAGUE" and next((s for s in target.status if s[0] == "PLAGUE"), None)[1] >= target.hp * 5:
-        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5)
+        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5, "plague")
         applyStatus(user, target, "PLAGUE", 0, -(next((s for s in target.status if s[0] == "PLAGUE"), None)[1]), "", "-", False)
 
     for i in range(len(hitList)):
@@ -1183,13 +1215,18 @@ def applyTrait(user, target, trait, val):
             val = traitList[traitName.index(trait)].secondaryText
         target.traits.append([trait, val])
 
-def hurt(user, target, damage):
-    global recordingLastDamage, allEntities
+def hurt(user, target, damage, cause, respectiveAnimName=None):
+    global recordingLastDamage, allEntities, allVisuals
 
     userMates = partyList + summonList if user in partyList or summonList else enemyList
     userNotMates = enemyList if user in partyList or summonList else partyList + summonList
     targetMates = partyList + summonList if target in partyList or summonList else enemyList
-    targetNotMates = enemyList if target in partyList or summonList else partyList + summonList   
+    targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
+
+    userVisual = allVisuals[allEntities.index(user)]
+    targetVisual = allVisuals[allEntities.index(target)]
+    userDiv = document.getElementById(userVisual.id)
+    targetDiv = document.getElementById(targetVisual.id)
 
     hoi = False
     for i in range(len(target.traits)):
@@ -1198,7 +1235,16 @@ def hurt(user, target, damage):
             if j[0] == "invulnerable":
                 hoi = True
     if not hoi:
-        updateHp(target, -damage)
+        target.hp -= damage
+        if respectiveAnimName:
+            locatedFrame = animlocateFrame(respectiveAnimName, cause)
+            animAdd(updateHp(targetVisual, -damage), locatedFrame, False)
+            if cause in ["damage", "selfDamage", "bleed"]:
+                animAdd(effectNumber(damage, targetDiv, "red", 1000), locatedFrame, False)
+            elif cause in ["plague"]:
+                animAdd(effectNumber(damage, targetDiv, "green", 1000), locatedFrame, False)
+            elif cause in ["die"]:
+                animAdd(effectNumber(damage, targetDiv, "black", 1000), locatedFrame, False)
         allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
         recordingLastDamage[allEntities.index(target)] = damage
         carrier = next((s for s in target.status if s[0] == "SWARM"), [0, 0, 0, 0])[1]
@@ -1217,7 +1263,6 @@ def hurt(user, target, damage):
             if target.hp / target.maxhp <= carrier-1 / carrier:
                 difference = math.floor((target.maxhp - target.hp) / (target.maxhp / carrier))
                 target.maxhp -= math.floor(target.maxhp / carrier * difference)
-                updateHp(target, 0)
                 target.strength -= math.floor(target.strength / carrier * difference)
                 applyStatus(user, target, "SWARM", 0, -difference, "", "-", False)
     
@@ -1231,37 +1276,9 @@ def heal(user, target, heal):
             if j[0] == "invulnerable":
                 hoi = True
     if not hoi:
-        updateHp(target, heal)
-
-def updateHp(target, hp):
-    
-    characterDiv = document.getElementById(target.id)
-    hpDiv = characterDiv.querySelector("#hp")
-    if hpDiv:
-        target.hp += hp
+        target.hp += heal
         if target.hp > target.maxhp:
             target.hp = target.maxhp
-        hpDiv.innerHTML = f"HP: {target.hp} / {target.maxhp}"
-
-        hpBarDiv = characterDiv.querySelector("#hpBar")
-        if target.maxhp == 0:
-            updateProgressBar(hpBarDiv, 0)
-        else:
-            updateProgressBar(hpBarDiv, target.hp / target.maxhp)
-
-def updateJuice(target, juice):
-    target.juice += juice
-    if target.juice > target.maxjuice:
-        target.juice = target.maxjuice
-    characterDiv = document.getElementById(target.id)
-    juiceDiv = characterDiv.querySelector("#juice")
-    juiceDiv.innerHTML = f"JUICE: {target.juice} / {target.maxjuice}"
-
-    juiceBarDiv = characterDiv.querySelector("#juiceBar")
-    if target.maxjuice == 0:
-        updateProgressBar(juiceBarDiv, 0)
-    else:
-        updateProgressBar(juiceBarDiv, target.juice / target.maxjuice)
 
 def updateCoins(amount):
     coins += amount
@@ -1336,7 +1353,6 @@ def deathCheck(killer):
                     
                     if next((s for s in deceased.status if s[0] == "UNDYING"), [0, 0, 0, 0])[1] > 0:
                         deceased.hp = 1
-                        updateHp(deceased, 0)
                         deceased.alive = True
                         deceased.summon = True
                         applyStatus(deceased, deceased, "UNDYING", 0, -1, "", "", False)
@@ -1351,7 +1367,7 @@ def deathCheck(killer):
             for k in traitInfo.info:
                 if k[0] == "invulnerable":
                     hoi = True
-        if carrier[i].alive and (not hoi):
+        if carrier[i].alive == True and hoi == False:
             alive += 1
     if alive == 0:
         combatEnd = True
@@ -1364,7 +1380,7 @@ def deathCheck(killer):
             for k in traitInfo.info:
                 if k[0] == "invulnerable":
                     hoi = True
-        if carrier[i].alive or not hoi:
+        if carrier[i].alive == True and hoi == False:
             alive += 1
     if alive == 0:
         combatEnd = True
@@ -1413,7 +1429,7 @@ async def combatRoomGen():
     difficulty = currentLevel.difficulty
 
     for i in range(len(currentLevel.enemyRoster)):
-        await addEnemy(currentLevel.enemyRoster[i])
+        addEnemy(currentLevel.enemyRoster[i])
 
 def Bag():
     print("hi")
@@ -1439,7 +1455,9 @@ def getItem(item, number):
     for i in range(len(hitList)):
         bag.remove(next((s for s in bag if s[0] == hitList[i]), None))
 
-def useItem(item, target):  
+def useItem(item, target): 
+    global allEntities, allVisuals 
+    target = allEntities[allVisuals.index(target)]
     itemInfo = copy.deepcopy(itemList[itemName.index(item)])
     mates = partyList + summonList
     notMates = enemyList
@@ -1500,7 +1518,6 @@ def getTargetFromDiv(div):
             
 async def MainMenu():
     choiceResult = await choose(["New Game", "Load Save"], "Choice.exe", "Choice.exe", "", False)
-    print(choiceResult)
     
     if choiceResult == "New Game":
         await Start()
@@ -1599,7 +1616,6 @@ def Shop():
     generateShopWindow([abilitiesForSale], CallbackBuy=Buy, CallbackRestock=RestockShop)
 
 def Buy(item, itemDiv, vendor):
-    print(vendor)
     global coins, bag
 
     vendorDiv = document.getElementById(vendor)
@@ -1637,5 +1653,4 @@ def Buy(item, itemDiv, vendor):
             print("hi")
         itemDiv.remove()
 
-effectNumber(100, 100, 100, "")
 asyncio.ensure_future(Main())

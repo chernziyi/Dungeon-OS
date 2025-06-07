@@ -6,20 +6,19 @@ from typing import Tuple
 @dataclass
 class AnimData:
     id: str
-    animChart: Tuple
+    info: Tuple
     def load_from(self, other: "AnimData"):
         self.__dict__.update(other.__dict__)
 
 ["Pirate", "Dissector", "Qi Master", "Raven", "Shaman", "Bard"]
-pirateAnimName =\
-[]
-pirateAnimList =\
-[]
 
 pirateAnimUseSkillName =\
-["pirateUseSkillAttack"]
+["PirateUseSkillAttack"]
 pirateAnimUseSkillList =\
-[AnimData("pirateUseSkillAttack", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage"]]])]
+[AnimData("PirateUseSkillAttack", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage"]]])]
+
+pirateAnimName = pirateAnimUseSkillName
+pirateAnimList = pirateAnimUseSkillList
 
 dissectorAnimName =\
 []
