@@ -20,6 +20,8 @@ animKeyFrames = []
 animRunning = False
 animEnded = True
 
+highestZ = 1
+
 def clearDiv(div):
     document.getElementById(div).innerHTML = ""
 
@@ -156,6 +158,9 @@ def addTitle(div, titleName, X, future, secondaryButton):
     currentX, currentY = screen.style.left, screen.style.top
 
     def pointerdown(e):
+        global highestZ
+        highestZ += 1
+        screen.style.zIndex = highestZ
         if e.target.className != "titleButton":
             dragging["active"] = True
             title.setPointerCapture(e.pointerId)
@@ -224,7 +229,7 @@ def addTitle(div, titleName, X, future, secondaryButton):
 
 async def WaitForAnimFinished():
     while animRunning:
-        await asyncio.sleep(0.05)
+        await asyncio.sleep(0.01)
 
 def animLoad(animName, info, div, frame):
     global animStorage, animKeyFrames
@@ -235,20 +240,24 @@ def animLoad(animName, info, div, frame):
         animKeyFrames.append([animName, info[3]])
 
 def animlocateFrame(animName, keyframe):
-    print("info", animKeyFrames, animStorage, animQueue)
+    # print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
+    anim = None
     for i in animKeyFrames:
         if i[0] == animName and keyframe in i[1]:
             anim = animStorage[animKeyFrames.index(i)]
             break
     idk = False
-    for i in animQueue:
-        for j in i:
-            if j == anim:
-                idk = True
-                return animQueue.index(i)
-    if idk == False:
+    if anim:
+        for i in animQueue:
+            for j in i:
+                if j == anim:
+                    idk = True
+                    return animQueue.index(i)
+        if idk == False:
+            return None
+    else:
         return None
-
+    
 def animSeekAndDestroy(animName, keyframe):
     global animKeyFrames
     for i in animKeyFrames:
@@ -331,8 +340,86 @@ def updateJuice(target, juice):
         setTimeout(create_proxy(lambda: done()), 0)
     return anim
 
+def updateStatusAdd(target, status):
+    def anim(done):
+        target.status.append(status)
+        characterDiv = document.getElementById(target.id)
+        statusDiv = characterDiv.querySelector("#statusEffects")
+        grid = statusDiv.querySelector("#statusGrid")
+
+        keywordInfo = keywordList[keywordName.index(status[0])]
+        
+        iconDiv = document.createElement("div")
+        iconDiv.className = "statusIcon"
+        iconDiv.id = status[0]
+
+        image = document.createElement("img")
+        image.id = "image"
+        iconDiv.appendChild(image)
+        if isinstance(status[1], int):
+            if len(keywordInfo.icon) == 1:
+                image.src = keywordInfo.icon[0]
+            else:
+                if keywordInfo.iconCriteria == "stacks":
+                    if status[1] >= len(keywordInfo.icon):
+                        image.src = keywordInfo.icon[len(keywordInfo.icon) - 1]
+                    else:
+                        image.src = keywordInfo.icon[status[1] - 1]
+            stacks = document.createElement("div")
+            stacks.className = "stacksNumber"
+            stacks.id = "stacks"
+            stacks.textContent = status[1]
+            iconDiv.appendChild(stacks)
+        grid.append(iconDiv)
+        setTimeout(create_proxy(lambda: done()), 0)
+    return anim
+
+def updateStatusChange(target, original, new):
+    def anim(done):
+        for i in range(len(target.status)):
+            if target.status[i] == original:
+                target.status[i] == new
+        characterDiv = document.getElementById(target.id)
+        statusDiv = characterDiv.querySelector("#statusEffects")
+        grid = statusDiv.querySelector("#statusGrid")
+        iconDiv = statusDiv.querySelector(f"#{new[0]}")
+        image = iconDiv.querySelector(f"#image")
+        stacks = iconDiv.querySelector(f"#stacks")
+
+        keywordInfo = keywordList[keywordName.index(new[0])]
+
+        if isinstance(new[1], int):
+            if len(keywordInfo.icon) == 1:
+                image.src = keywordInfo.icon[0]
+            else:
+                if keywordInfo.iconCriteria == "stacks":
+                    if new[1] >= len(keywordInfo.icon):
+                        image.src = keywordInfo.icon[len(keywordInfo.icon) - 1]
+                    else:
+                        image.src = keywordInfo.icon[new[1] - 1]
+            if stacks:
+                stacks.textContent = new[1]
+        grid.append(iconDiv)
+        setTimeout(create_proxy(lambda: done()), 0)
+    return anim
+
+def updateStatusRemove(target, statusName):
+    def anim(done):
+        for i in copy.deepcopy(target.status):
+            if i[0] == statusName:
+                target.status.remove(i)
+        characterDiv = document.getElementById(target.id)
+        statusDiv = characterDiv.querySelector("#statusEffects")
+        grid = statusDiv.querySelector("#statusGrid")
+        iconDiv = statusDiv.querySelector(f"#{statusName}")
+        iconDiv.remove()
+
+        setTimeout(create_proxy(lambda: done()), 0)
+    return anim
+
 def effectNumber(number, div, color, duration):
     def anim(done):
+        global highestZ
         x, y = getCenterCoords(div)
         effectDiv = document.createElement("div")
         effectDiv.className = "effectNumber"
@@ -341,9 +428,11 @@ def effectNumber(number, div, color, duration):
         effectDiv.style.left = f"{x}px"
         effectDiv.style.top = f"{y}px"
         effectDiv.style.color = color
+        highestZ += 1
+        effectDiv.style.zIndex = highestZ
         document.body.appendChild(effectDiv)
 
-        setTimeout(create_proxy(lambda: done()), duration)
+        setTimeout(create_proxy(lambda: done()), 0)
 
         def cleanup():
             if effectDiv.parentNode:
@@ -360,12 +449,15 @@ def replaceImage(div, imageLink, duration):
     return anim
 
 def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
+    global highestZ
     hoi = False 
     screen = document.createElement("div")
     screen.className = "window"
     screen.id = subject.id
     screen.setAttribute("draggable", "false")  # Prevent window dragging
     document.body.appendChild(screen)
+    highestZ += 1
+    screen.style.zIndex = highestZ
     
     addTitle(subject.id, f"{subject.id}.chr", False, None, True)
     for i in range(len(subject.traits)):
@@ -379,6 +471,16 @@ def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
 
     if faction == "player":
         addJuice(screen, subject)
+
+    statusEffectsWindow = document.createElement("div")
+    statusEffectsWindow.id = "statusEffects"
+    statusEffectsWindow.className = "windowBody"
+    screen.appendChild(statusEffectsWindow)
+
+    statusGrid = document.createElement("div")
+    statusGrid.id = "statusGrid"
+    statusGrid.className = "statusGrid"
+    statusEffectsWindow.appendChild(statusGrid)
 
     viewport_width = window.innerWidth
     viewport_height = window.innerHeight
@@ -421,34 +523,27 @@ def generateWindow(subject, faction, callbackUse=None, callbackGetTarget=None):
         print(f"Error binding character window events: {str(e)}")
 
 def generateStatusWindow(subject, faction):
+    global highestZ
     hoi = False
     Xpos = "0px"
     Ypos = "0px"
 
     screen = document.getElementById(f"{subject.id}Status")
     if screen:
+        tadaa = True
         # Get the computed position of the div
         rect = screen.getBoundingClientRect()
         Xpos = f"{rect.left}px"
         Ypos = f"{rect.top}px"
         screen.innerHTML = ""
     else:
+        tadaa = False
         screen = document.createElement("div")
         screen.className = "window"
         screen.id = f"{subject.id}Status"
         document.body.appendChild(screen)
-        # Randomize position for new divs
-        viewport_width = window.innerWidth
-        viewport_height = window.innerHeight
-        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
-        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
-        max_left = viewport_width - window_width
-        max_top = viewport_height - window_height
-        Xpos = f"{random.randint(0, max(0, max_left))}px"
-        Ypos = f"{random.randint(0, max(0, max_top))}px"
     
     addTitle(f"{subject.id}Status", f"Status ({subject.id})", True, None, False)
-    setPosition(f"{subject.id}Status", Xpos, Ypos, "")
 
     for i in range(len(subject.traits)):
         traitInfo = traitList[traitName.index(subject.traits[i][0])]
@@ -608,10 +703,26 @@ def generateStatusWindow(subject, faction):
 
             addDescription(statWindow.querySelector("#equipment"), i, placeholder)
 
+    highestZ += 1
+    screen.style.zIndex = highestZ
+
+    if not tadaa:
+        viewport_width = window.innerWidth
+        viewport_height = window.innerHeight
+        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
+        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
+        max_left = viewport_width - window_width
+        max_top = viewport_height - window_height
+        Xpos = f"{random.randint(0, max(0, max_left))}px"
+        Ypos = f"{random.randint(0, max(0, max_top))}px"
+
+    # Apply the position immediately
+    setPosition(f"{subject.id}Status", Xpos, Ypos, "")
+    
     screen.style.visibility = ""
 
 async def choose(options, div, title, content, Exit):
-    global future
+    global future, highestZ
     future = asyncio.Future()
     Xpos = "0px"
     Ypos = "0px"
@@ -620,31 +731,22 @@ async def choose(options, div, title, content, Exit):
 
     container = document.getElementById(div)
     if container:
+        tadaa = True
         # Get the computed position of the div
         rect = container.getBoundingClientRect()
         Xpos = f"{rect.left}px"
         Ypos = f"{rect.top}px"
         container.innerHTML = ""
     else:
+        tadaa = False
         container = document.createElement("div")
         container.id = div
         container.className = "window"
         document.body.appendChild(container)
-        # Randomize position for new divs
-        viewport_width = window.innerWidth
-        viewport_height = window.innerHeight
-        window_width = container.offsetWidth or 200  # Fallback if offsetWidth is 0
-        window_height = container.offsetHeight or 200  # Fallback if offsetHeight is 0
-        max_left = viewport_width - window_width
-        max_top = viewport_height - window_height
-        Xpos = f"{random.randint(0, max(0, max_left))}px"
-        Ypos = f"{random.randint(0, max(0, max_top))}px"
 
     # Title first
     addTitle(div, title, Exit, future, False)
 
-    # Apply the position immediately
-    setPosition(div, Xpos, Ypos, "")
 
     if content:
         windowBody = document.createElement("div")
@@ -665,6 +767,22 @@ async def choose(options, div, title, content, Exit):
         btn.addEventListener("click", proxyClick)
         button_proxies.append(proxyClick)
         container.appendChild(btn)
+
+    highestZ += 1
+    container.style.zIndex = highestZ
+
+    if not tadaa:
+        viewport_width = window.innerWidth
+        viewport_height = window.innerHeight
+        window_width = container.offsetWidth or 200  # Fallback if offsetWidth is 0
+        window_height = container.offsetHeight or 200  # Fallback if offsetHeight is 0
+        max_left = viewport_width - window_width
+        max_top = viewport_height - window_height
+        Xpos = f"{random.randint(0, max(0, max_left))}px"
+        Ypos = f"{random.randint(0, max(0, max_top))}px"
+
+    # Apply the position immediately
+    setPosition(div, Xpos, Ypos, "")
 
     container.style.visibility = "visible"
 
@@ -780,33 +898,24 @@ def makeIconDraggable(item, grid, gridName, callbackSwap=None, callbackClick=Non
     item.addEventListener("click", create_proxy(on_click))
 
 def generateBagWindow(bag, coinAmount, callbackSwap=None):
+    global highestZ
     Xpos = "0px"
     Ypos = "0px"
 
     screen = document.getElementById(f"BagWindow")
     if screen:
+        tadaa = True
         # Get the computed position of the div
         rect = screen.getBoundingClientRect()
         Xpos = f"{rect.left}px"
         Ypos = f"{rect.top}px"
         screen.innerHTML = ""
     else:
+        tadaa = False
         screen = document.createElement("div")
         screen.id = "BagWindow"
         screen.className = "window"
         document.body.appendChild(screen)
-        # Randomize position for new divs
-        viewport_width = window.innerWidth
-        viewport_height = window.innerHeight
-        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
-        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
-        max_left = viewport_width - window_width
-        max_top = viewport_height - window_height
-        Xpos = f"{random.randint(0, max(0, max_left))}px"
-        Ypos = f"{random.randint(0, max(0, max_top))}px"
-
-    # Apply the position immediately
-    setPosition("BagWindow", Xpos, Ypos, "")
     
     addTitle("BagWindow", "Bag", True, None, False)
 
@@ -847,10 +956,26 @@ def generateBagWindow(bag, coinAmount, callbackSwap=None):
         makeIconDraggable(item, grid, "Bag", callbackSwap, None, None, None)
         grid.appendChild(item)
 
+
+    if not tadaa:
+        viewport_width = window.innerWidth
+        viewport_height = window.innerHeight
+        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
+        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
+        max_left = viewport_width - window_width
+        max_top = viewport_height - window_height
+        Xpos = f"{random.randint(0, max(0, max_left))}px"
+        Ypos = f"{random.randint(0, max(0, max_top))}px"
+
+    # Apply the position immediately
+    setPosition("BagWindow", Xpos, Ypos, "")
+
+    highestZ += 1
+    screen.style.zIndex = highestZ
     screen.style.visibility = "visible"
 
 def Notification(text):
-    global NotificationNumber
+    global NotificationNumber, highestZ
     NotificationNumber += 1
     container = document.createElement("div")
     container.id = f"Notification {NotificationNumber}"
@@ -877,6 +1002,8 @@ def Notification(text):
     windowBody.className = "windowBody"
     windowBody.innerHTML = text
     container.appendChild(windowBody)
+    highestZ += 1
+    container.style.zIndex = highestZ
 
 def createSkillDesc(user, hoi):
     buffing = False
@@ -1156,35 +1283,24 @@ def generateOSScreen(CallbackShop=None, CallbackBag=None, CallbackSave=None, Cal
         grid.appendChild(app)
 
 def generateSaveWindow(CallbackSaveUpload=None, CallbackSaveDownload=None):
+    global highestZ
     Xpos = "0px"
     Ypos = "0px"
 
     screen = document.getElementById(f"SaveManager")
     if screen:
+        tadaa = True
         # Get the computed position of the div
         rect = screen.getBoundingClientRect()
         Xpos = f"{rect.left}px"
         Ypos = f"{rect.top}px"
         screen.innerHTML = ""
     else:
+        tadaa = False
         screen = document.createElement("div")
         screen.id = "SaveManager"
         screen.className = "window"
         document.body.appendChild(screen)
-        # Randomize position for new divs
-        viewport_width = window.innerWidth
-        viewport_height = window.innerHeight
-        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
-        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
-        max_left = viewport_width - window_width
-        max_top = viewport_height - window_height
-        Xpos = f"{random.randint(0, max(0, max_left))}px"
-        Ypos = f"{random.randint(0, max(0, max_top))}px"
-
-    screen.style.visibility = "visible"
-
-    # Apply the position immediately
-    setPosition("SaveManager", Xpos, Ypos, "")
     
     addTitle("SaveManager", "Archiver", True, None, False)
 
@@ -1214,23 +1330,7 @@ def generateSaveWindow(CallbackSaveUpload=None, CallbackSaveDownload=None):
 
     CallbackSaveDownload()
 
-def generateShopWindow(shopDatabase, CallbackBuy=None, CallbackRestock=None):
-    Xpos = "0px"
-    Ypos = "0px"
-
-    screen = document.getElementById(f"ShopWindow")
-    if screen:
-        # Get the computed position of the div
-        rect = screen.getBoundingClientRect()
-        Xpos = f"{rect.left}px"
-        Ypos = f"{rect.top}px"
-        screen.innerHTML = ""
-    else:
-        screen = document.createElement("div")
-        screen.id = "ShopWindow"
-        screen.className = "window"
-        document.body.appendChild(screen)
-        # Randomize position for new divs
+    if not tadaa:
         viewport_width = window.innerWidth
         viewport_height = window.innerHeight
         window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
@@ -1239,14 +1339,37 @@ def generateShopWindow(shopDatabase, CallbackBuy=None, CallbackRestock=None):
         max_top = viewport_height - window_height
         Xpos = f"{random.randint(0, max(0, max_left))}px"
         Ypos = f"{random.randint(0, max(0, max_top))}px"
-        shopDatabase = CallbackRestock()
-
-        screen.style.visibility = "visible"
 
     # Apply the position immediately
-    setPosition("ShopWindow", Xpos, Ypos, "")
+    setPosition("SaveManager", Xpos, Ypos, "")
+    highestZ += 1
+    screen.style.zIndex = highestZ
+    screen.style.visibility = "visible"
+
+def generateShopWindow(shopDatabase, CallbackBuy=None, CallbackRestock=None):
+    global highestZ
+    Xpos = "0px"
+    Ypos = "0px"
+
+    screen = document.getElementById(f"ShopWindow")
+    if screen:
+        tadaa = True
+        # Get the computed position of the div
+        rect = screen.getBoundingClientRect()
+        Xpos = f"{rect.left}px"
+        Ypos = f"{rect.top}px"
+        screen.innerHTML = ""
+    else:
+        tadaa = False
+        screen = document.createElement("div")
+        screen.id = "ShopWindow"
+        screen.className = "window"
+        document.body.appendChild(screen)
+        shopDatabase = CallbackRestock()
     
     addTitle("ShopWindow", "BLK-M4K3T", True, None, False)
+    highestZ += 1
+    screen.style.zIndex = highestZ
 
     abilityVendor = document.createElement("div")
     abilityVendor.id = "abilityVendor"
@@ -1278,3 +1401,16 @@ def generateShopWindow(shopDatabase, CallbackBuy=None, CallbackRestock=None):
         makeIconDraggable(shopItem, abilityVendorGrid, "Shop", None, CallbackBuy, None, None)
         addDescription(shopItem, i.id, placeholderWindow)
         abilityVendorGrid.appendChild(shopItem)
+    
+    if not tadaa:
+        viewport_width = window.innerWidth
+        viewport_height = window.innerHeight
+        window_width = screen.offsetWidth or 200  # Fallback if offsetWidth is 0
+        window_height = screen.offsetHeight or 200  # Fallback if offsetHeight is 0
+        max_left = viewport_width - window_width
+        max_top = viewport_height - window_height
+        Xpos = f"{random.randint(0, max(0, max_left))}px"
+        Ypos = f"{random.randint(0, max(0, max_top))}px"
+
+    setPosition("ShopWindow", Xpos, Ypos, "")
+    screen.style.visibility = "visible"

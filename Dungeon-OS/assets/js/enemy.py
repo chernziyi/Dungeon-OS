@@ -5,6 +5,7 @@ from typing import Tuple
 @dataclass
 class EnemyData:
     id: str
+    actualId: str
     hp: int
     maxhp: int
     strength: int
@@ -33,11 +34,11 @@ class EnemyData:
 BeeName =\
 ["Bee", "Hardworking Bee"]
 BeeStats =\
-[EnemyData("Bee", 15, 15, 5, 0, 5, 0, [], [], [["Attack", 0], ["Kamikaze", 0]], [], [], [],\
+[EnemyData("Bee", "Bee", 15, 15, 5, 0, 5, 0, [], [], [["Attack", 0], ["Kamikaze", 0]], [], [], [],\
 ["default", [0], "hpBelow", 0.5, [1]],\
 [["Honeypot", 2], ["Nope", 1], ["Coins", 10]],\
 "user goes in for a sting!", True, False),
-EnemyData("Hardworking Bee", 20, 20, 8, 1, 8, 0, [], [], [["Kamikaze", 0], ["Overtime", 0]], [["UNDYING", 2, "", ""]], [], [],\
+EnemyData("Hardworking Bee", "Hardworking Bee", 20, 20, 8, 1, 8, 0, [], [], [["Kamikaze", 0], ["Overtime", 0]], [["UNDYING", 2, "", ""]], [], [],\
 ["default", [0], "notSummon", [1], "hpBelow", 0.5, [0]],\
 [["Honeypot", 2], ["Nope", 1], ["Coins", 25]],\
 "user goes in for a sting!", True, False)]
@@ -46,7 +47,7 @@ EnemyData("Hardworking Bee", 20, 20, 8, 1, 8, 0, [], [], [["Kamikaze", 0], ["Ove
 PlantName =\
 ["Mindless Roots"]
 PlantStats =\
-[EnemyData("Mindless Roots", 10, 10, 3, 5, 4, 0, [], [["Enroaching Roots", 0]], [["Attack", 0]], [], [], [],\
+[EnemyData("Mindless Roots", "Mindless Roots", 10, 10, 3, 5, 4, 0, [], [["Enroaching Roots", 0]], [["Attack", 0]], [], [], [],\
 ["default", [0]],\
 [["Herbal Leaf", 2], ["Nope", 1], ["Coins", 10]],\
 "Roots lash out by instinct!", True, False)]
@@ -61,11 +62,11 @@ GoldbotStats =\
 CultistName =\
 ["Obelisk", "Cultist"]
 CultistStats =\
-[EnemyData("Obelisk", 0, 0, 0, 0, 10, 0, [], [["One With Nature", 0], ["Faith-fueled", 30], ["Conduit Of Faith", 0]], [["The Calling", 0]], [], [], [],\
+[EnemyData("Obelisk", "Obelisk", 0, 0, 0, 0, 10, 0, [], [["One With Nature", 0], ["Faith-fueled", 30], ["Conduit Of Faith", 0]], [["The Calling", 0]], [], [], [],\
 ["none"],\
 [["Nope", 1], ["Coins", 30]],\
 "The Obelisk whispers...", True, False),
-EnemyData("Cultist", 30, 30, 3, 4, 6, 0, [], [], [["Prayer", 0]], [], [], [],\
+EnemyData("Cultist", "Cultist", 30, 30, 3, 4, 6, 0, [], [], [["Prayer", 0]], [], [], [],\
 ["default", [0]],\
 [["Nope", 1], ["Coins", 20]],\
 "user attempts to convert you with violence!", True, False)]
@@ -79,7 +80,7 @@ OozeStats =\
 PirateSummonName =\
 ["Cannon"]
 PirateSummonStats =\
-[EnemyData("Cannon", 15, 15, 4, 2, 3, 0, [], [], [["Attack", 0]], [], [], [],\
+[EnemyData("Cannon", "Cannon", 15, 15, 4, 2, 3, 0, [], [], [["Attack", 0]], [], [], [],\
 ["default", [0]],\
 [["Nope", 1]],\
 "'Fire in the hole!'", True, False)]
@@ -87,7 +88,7 @@ PirateSummonStats =\
 RavenSummonName =\
 ["Birb"]
 RavenSummonStats =\
-[EnemyData("Birb", 5, 5, 2, 0, 6, 0, [], [["Swarm", 0]], [["Attack", 0]], [], [], [],\
+[EnemyData("Birb", "Birb", 5, 5, 2, 0, 6, 0, [], [["Swarm", 0]], [["Attack", 0]], [], [], [],\
 ["default", [0]],\
 [["Nope", 1]],\
 "user does what users do best-- be annoying!", True, False)]
@@ -95,7 +96,7 @@ RavenSummonStats =\
 ShamanSummonName =\
 ["Slippery Sand"]
 ShamanSummonStats =\
-[EnemyData("Slippery Sand", 0, 0, 0, 0, 1, 0, [], [["One With Nature", 0], ["Slippery", 0]], [], [], [], [],\
+[EnemyData("Slippery Sand", "Slippery Sand", 0, 0, 0, 0, 1, 0, [], [["One With Nature", 0], ["Slippery", 0]], [], [], [], [],\
 ["none"],\
 [["Nope", 1]],\
 "user can't do jack. It's SAND", True, False)]

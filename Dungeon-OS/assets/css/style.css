@@ -143,7 +143,6 @@ input[type="file"]:disabled,
     box-shadow: var(--borderWindowOuter), var(--borderWindowInner);
     background: var(--window);
     padding: 3px;
-    z-index: 1000; /* Ensure windows are above other content */
     position: absolute; /* Reinforce Python positioning */
 }
 
@@ -154,7 +153,6 @@ input[type="file"]:disabled,
     box-shadow: var(--borderWindowOuter), var(--borderWindowInner);
     background: var(--window);
     padding: 3px;
-    z-index: 1000;
     top: 100%; /* Position below the hoverText */
     left: 50%;
     transform: translateX(-50%);
@@ -173,6 +171,10 @@ input[type="file"]:disabled,
 .windowBody {
     margin: var(--spacingNormal);
     position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Or a fixed height if needed */
+    width: auto;   /* Prevent full horizontal stretch */
 }
 
 .title {
@@ -330,13 +332,11 @@ input[type="file"]:disabled,
 
 .effectNumber {
     position: absolute;
-    color: red;
     font-weight: bold;
     font-family: 'Courier New', Courier, monospace;
     font-size: 2rem;
     animation: floatUp 1s ease-out forwards;
     pointer-events: none;
-    z-index: 1000;
 }
 
 @keyframes floatUp {
@@ -345,4 +345,36 @@ input[type="file"]:disabled,
     50%  { transform: translateY(-20px); }
     70%  { transform: translateY(-35px); }
     100% { transform: translateY(-50px); opacity: 0; }
+}
+
+.statusIcon {
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    position: relative;
+}
+
+.statusGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16px, 1fr)); /* Adjust cell size */
+    gap: var(--spacingThin);
+    padding: var(--spacingThin);
+    position: relative;
+    width: fit-content;   /* Shrink-wraps horizontally to contents */
+    max-width: 100%;      /* Optional: don't overflow container */
+}
+
+.stacksNumber {
+    position: absolute;
+    bottom: -4px; /* Offset below icon */
+    right: -4px; /* Offset to the right */
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--windowBorder);
+    pointer-events: none; /* Prevent drag-and-drop interference */
 }

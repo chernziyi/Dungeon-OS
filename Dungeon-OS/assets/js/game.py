@@ -1,7 +1,7 @@
 from ui import generateWindow, generateStatusWindow, generateBagWindow, generateOSScreen,\
 setPosition, choose, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
 generateShopWindow, effectNumber, animlocateFrame, animAdd, animStart, animLoad, updateHp, updateJuice, animSeekAndDestroy,\
-WaitForAnimFinished
+WaitForAnimFinished, updateStatusAdd, updateStatusChange, updateStatusRemove
 from player import PlayerData, classes, classList
 from enemy import EnemyData, enemyStats, enemyName
 from level import LevelData, combatZone1, combatZone0
@@ -11,7 +11,7 @@ from traits import TraitData, traitName, traitList, pirateTraitList, dissectorTr
 ravenTraitList, shamanTraitList, bardTraitList
 from item import ItemData, itemName, itemList
 from upgrades import upgradeTable
-from animchart import animName, animList
+from animchart import AnimData, animName, animList
 
 from pyodide.ffi import create_proxy # type: ignore
 from dataclasses import asdict
@@ -45,29 +45,29 @@ cloneParty = [None, clone1, clone2, clone3, clone4]
 
 summonNumber = 0
 summonList = []
-summon1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summon2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summon3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summon4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summon1 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summon2 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summon3 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summon4 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
-summonVisual1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summonVisual2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summonVisual3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-summonVisual4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual1 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual2 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual3 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+summonVisual4 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
 summonParty = [None, summon1, summon2, summon3, summon4]
 
 enemyNumber = 0
 enemyList = []
-enemy1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemy2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemy3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemy4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemy1 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemy2 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemy3 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemy4 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
-enemyVisual1 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemyVisual2 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemyVisual3 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
-enemyVisual4 = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual1 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual2 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual3 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+enemyVisual4 = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
 enemyParty = [None, enemy1, enemy2, enemy3, enemy4]
 
@@ -322,7 +322,7 @@ async def endOfCombat():
     for i in range(len(removables)):
         characterDiv = document.getElementById(removables[i].id)
         characterDiv.remove()
-        removables[i] = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+        removables[i] = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
     for i in partyList:
         await upgrade(i, 3)
@@ -529,7 +529,9 @@ async def StartOfTurn(user):
         elif not (carrier[i][2] == "" or "INFUSE"):
             applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False)
 
-def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition):
+def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, insertedFrame=None):
+    global animFrame
+    animFrame = insertedFrame + 1
     trait = copy.deepcopy(actualTrait)
     traitInfo = copy.deepcopy(actualTraitInfo)
     triggerSuccess = True
@@ -548,10 +550,28 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition):
 
     if triggerSuccess:
         voiceline (user, target, trait.id, trait.useText, traitCondition)
+        userDiv = document.getElementById(user.id)
 
         mates = []
         notMates = []
         targets = []
+
+        if insertedFrame:
+            if isinstance(user, PlayerData):
+                currentAnimName = f"{user.classId}UseTrait{trait.id}{traitCondition}"
+            elif isinstance(user, EnemyData):
+                currentAnimName = f"{user.id}UseTrait{trait.actualId}{traitCondition}"
+            
+            if currentAnimName in animName:
+                animChart = AnimData("", [])
+                animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
+
+                for i in animChart.info:
+                    print(i)
+                    animLoad(currentAnimName, i, userDiv, animFrame)
+                    animFrame += 1
+            else:
+                currentAnimName = None
 
         if isinstance(user, PlayerData):
             mates = partyList + summonList
@@ -565,14 +585,14 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition):
                 notMates = partyList + summonList
         
         if traitInfo[1]:
-            Effect(user, user, trait.id, traitInfo, 0)
+            Effect(user, user, trait.id, traitInfo, 0, respectiveAnimName=currentAnimName)
         else:
             targets = mates if traitInfo[2] else notMates
             if traitInfo[3]:
                 for i in range(len(targets)):
-                    Effect(user, targets[i], trait.id, traitInfo, 0)
+                    Effect(user, targets[i], trait.id, traitInfo, 0, respectiveAnimName=currentAnimName)
             else:
-                Effect(user, target, trait.id, traitInfo, 0)
+                Effect(user, target, trait.id, traitInfo, 0, respectiveAnimName=currentAnimName)
 
 async def useSkill(user, faction, skill):
     global targetables, outofJuice, infusion
@@ -687,23 +707,33 @@ def skillEffect(user, target, skillInfo, AOE):
     buffDataCollecting = False
     buffDuration = ""
 
+    userVisual = allVisuals[allEntities.index(user)]
+    targetVisual = allVisuals[allEntities.index(target)]
+    userDiv = document.getElementById(userVisual.id)
+    targetDiv = document.getElementById(targetVisual.id)
+
     if isinstance(user, PlayerData):
         currentAnimName = f"{user.classId}UseSkill{skillInfo.id}"
     elif isinstance(user, EnemyData):
-        currentAnimName = f"{user.id}UseSkill{skillInfo.id}"
+        currentAnimName = f"{user.id}UseSkill{skillInfo.actualId}"
     
     if currentAnimName in animName:
-        animChart = animList[animName.index(currentAnimName)]
+        animChart = AnimData("", [])
+        animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
 
         for i in animChart.info:
             print(i)
             animLoad(currentAnimName, i, userDiv, animFrame)
             animFrame += 1
+        
+        if infusion and skillCondition != "chant" and isinstance(user, PlayerData):
+            user.juice -= skillInfo.juiceCost
+            locatedFrame = animlocateFrame(currentAnimName, "useSkill")
+            animAdd(updateJuice(userVisual, -skillInfo.juiceCost), locatedFrame, False)
+
     else:
         currentAnimName = None
 
-    if infusion and skillCondition != "chant" and isinstance(user, PlayerData):
-        updateJuice(user, -skillInfo.juiceCost)
     
     for i in range(len(user.traits)):
         traitInfo = copy.deepcopy(traitList[traitName.index(user.traits[i][0])])
@@ -759,7 +789,13 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
     targetMates = partyList + summonList if target in partyList or summonList else enemyList
     targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
 
+    userVisual = allVisuals[allEntities.index(user)]
+    targetVisual = allVisuals[allEntities.index(target)]
+    userDiv = document.getElementById(userVisual.id)
+    targetDiv = document.getElementById(targetVisual.id)
+
     for i in range(len(info)):
+        currentFrame = animlocateFrame(respectiveAnimName, info[i])
         if info[i] == "userToTarget":
             user = target
         if info[i] == "randomTarget":
@@ -806,19 +842,20 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                 traitInfo = traitList[traitName.index(user.traits[i][0])]
                 for j in traitInfo.info:
                     if j[0] == "onDamage":
-                        traitEffect(user, target, traitInfo, j, "onDamage")
+                        insertedFrame = animlocateFrame(respectiveAnimName, "damage")
+                        traitEffect(user, target, traitInfo, j, "onDamage", insertedFrame)
 
             if next((s for s in target.status if s[0] == "BLEED"), [0, 0, 0])[1] > 0:
-                applyStatus(user, target, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+                applyStatus(user, target, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False, currentFrame)
             if next((s for s in target.status if s[0] == "FAITH"), [0, 0, 0])[1] > 0:
-                applyStatus(user, target, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False)
+                applyStatus(user, target, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False, currentFrame)
 
             thorns = next((s for s in target.specialStats if s[0] == "thorns"), [0, 0, 0])[1]
             if thorns > 0:
                 hurt(target, user, thorns)
 
             if next((s for s in target.status if s[0] == "COUNTER"), [0, 0, 0])[1] > 0:
-                applyStatus(target, target, "COUNTER", 0, -1, "", "", False)
+                applyStatus(target, target, "COUNTER", 0, -1, "", "", False, currentFrame)
                 skillCondition = "-"
                 skillEffect(target, user, skillList[skillName.index("Counter")], False)
         if info[i] == "selfDamage":
@@ -858,20 +895,20 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                 user.maxhp -= damage
 
             if next((s for s in user.status if s[0] == "BLEED"), [0, 0, 0])[1] > 0:
-                applyStatus(user, user, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+                applyStatus(user, user, "BLEED", 0, math.ceil(damage * 0.1) + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False, currentFrame)
             if next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0])[1] > 0:
-                applyStatus(user, user, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False)
+                applyStatus(user, user, "FAITH", 0, -math.ceil(damage * 0.25), "", "-", False, currentFrame)
         if info[i] == "heal":
             info = updateInfo(info, i, 3, target, user, name)
             healBonus = next((s for s in user.specialStats if s[0] == "HEALBONUS"), [0, 0, 0])[1]
             if info[i + 2] == "max":
                 target.maxhp += info[i + 1] + healBonus
-            heal(user, target, info[i + 1] + healBonus)
+            heal(user, target, info[i + 1] + healBonus, respectiveAnimName=respectiveAnimName)
         if info[i] == "die":
             hurt(user, user, user.hp, "die", respectiveAnimName=respectiveAnimName)
         if info[i] == "ammo":
             info = updateInfo(info, i, 2, target, user, name)
-            applyStatus(user, user, "AMMO", 0, info[i + 1], "", "-", False)
+            applyStatus(user, user, "AMMO", 0, info[i + 1], "", "-", False, currentFrame)
         if info[i] == "reload":
             Reload(user)
         if info[i] == "chant":
@@ -882,7 +919,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                     for j in traitInfo.info:
                         if j[0] == "onChant":
                             traitEffect(user, user, traitInfo, j, "onChant")
-                applyStatus(user, user, "CHANT", 0, 0, info[i + 1], name, False)
+                applyStatus(user, user, "CHANT", 0, 0, info[i + 1], name, False, currentFrame)
                 break
             else:
                 skillCondition = "-"
@@ -891,26 +928,26 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
         if info[i] == "drunk":
             info = updateInfo(info, i, 4, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
-                applyStatus(user, target, "DRUNK", info[i + 2], info[i + 3], info[i + 4], "-", False)
+                applyStatus(user, target, "DRUNK", info[i + 2], info[i + 3], info[i + 4], "-", False, currentFrame)
         if info[i] == "bleed":
             info = updateInfo(info, i, 3, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
-                applyStatus(user, target, "BLEED", 0, info[i + 2] + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False)
+                applyStatus(user, target, "BLEED", 0, info[i + 2] + next((s for s in user.specialStats if s[0] == "BLEEDBONUS"), [0, 0, 0])[1], "", "-", False, currentFrame)
         if info[i] == "hemotoxin":
             info = updateInfo(info, i, 3, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
-                applyStatus(user, target, "HEMOTOXIN", 0, info[i + 2], "", "-", False)
+                applyStatus(user, target, "HEMOTOXIN", 0, info[i + 2], "", "-", False, currentFrame)
         if info[i] == "plague":
             info = updateInfo(info, i, 3, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
-                applyStatus(user, target, "PLAGUE", 0, info[i + 2], "", "-", False)
+                applyStatus(user, target, "PLAGUE", 0, info[i + 2], "", "-", False, currentFrame)
         if info[i] == "taunt":
             info = updateInfo(info, i, 3, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
-                applyStatus(user, target, "TAUNT", 0, info[i + 2], "", user.id, False)
+                applyStatus(user, target, "TAUNT", 0, info[i + 2], "", user.id, False, currentFrame)
         if info[i] == "stealth":
             info = updateInfo(info, i, 2, target, user, name)
-            applyStatus(user, target, "STEALTH", 1, 0, info[i + 1], user.id, False)
+            applyStatus(user, target, "STEALTH", 1, 0, info[i + 1], user.id, False, currentFrame)
         if info[i] == "pray":
             info = updateInfo(info, i, 2, target, user, name)
             for j in (userMates + userNotMates):
@@ -919,7 +956,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                     for l in traitInfo.info:
                         if l[0] == "conduit":
                             print(info[i + 1])
-                            applyStatus(user, j, "FAITH", 0, info[i + 1], "", user.id, False)
+                            applyStatus(user, j, "FAITH", 0, info[i + 1], "", user.id, False, currentFrame)
         if info[i] == "cantrip":
             if cantripUsed == False:
                 cantrip = True
@@ -939,12 +976,15 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                         Narrate(f"Extraction complete.")
                     else:
                         Narrate(f"Nothing was extracted.")
-                updateJuice(user, 0)
+                userVisual.maxjuice -= cost
+                locatedFrame = animlocateFrame(respectiveAnimName, "useSkill")
+                animAdd(updateJuice(userVisual, 0), locatedFrame, False)
         if info[i] == "buff":
             info = updateInfo(info, i, info.index("buffEnd") - i + 1, target, user, name)
             buffDataCollecting = True
         if info[i] == "buffEnd":
             buffDataCollecting = False
+            currentFrame = animlocateFrame(respectiveAnimName, "buff")
             if infusion:
                 Buff(user, target, name, buffData, 1, True)
             else:
@@ -952,16 +992,16 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                     Buff(user, target, name, buffData, -next((s for s in target.status if s[0] == name), [0, 0, 0])[1], True)
         if info[i] == "counter":
             info = updateInfo(info, i, 2, target, user, name)
-            applyStatus(user, user, "COUNTER", 0, info[i + 1], "", "-", False)
+            applyStatus(user, user, "COUNTER", 0, info[i + 1], "", "-", False, currentFrame)
         if info[i] == "undying":
             info = updateInfo(info, i, 2, target, user, name)
-            applyStatus(user, user, "UNDYING", 0, info[i + 1], "", "-", False)
+            applyStatus(user, user, "UNDYING", 0, info[i + 1], "", "-", False, currentFrame)
         if info[i] == "faith":
             info = updateInfo(info, i, 2, target, user, name)
             if info[i + 1] == "loseAll":
-                applyStatus(user, user, "FAITH", 0, -next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0, 0])[1], "", "-", False)
+                applyStatus(user, user, "FAITH", 0, -next((s for s in user.status if s[0] == "FAITH"), [0, 0, 0, 0])[1], "", "-", False, currentFrame)
             else:
-                applyStatus(user, user, "FAITH", 0, info[i + 1], "", "-", False)
+                applyStatus(user, user, "FAITH", 0, info[i + 1], "", "-", False, currentFrame)
         if info[i] == "loot":
             info = updateInfo(info, i, 3, target, user, name)
             if info[i + 1] == "coins":
@@ -989,7 +1029,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
             victim.maxhp += user.maxhp * (bodies + modifier)
             victim.hp += user.hp * (bodies + modifier)
             victim.strength += user.strength * (bodies + modifier)
-            applyStatus(user, victim, "SWARM", 0, bodies, "", "-", False)
+            applyStatus(user, victim, "SWARM", 0, bodies, "", "-", False, currentFrame)
         if info[i] == "cleanse":
             info = updateInfo(info, i, 2, target, user, name)
             cleansables = []
@@ -998,7 +1038,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                     cleansables.append(next((s for s in target.status if s[0] == i), [0, 0, 0, 0])[0])
             print(cleansables)
             if len(cleansables) > 0:
-                applyStatus(user, target, random.choice(cleansables), 0, -info[i + 1], "-", False)
+                applyStatus(user, target, random.choice(cleansables), 0, -info[i + 1], "-", False, currentFrame)
         if info[i] == "useSkill":
             info = updateInfo(info, i, 2, target, user, name)
             if isinstance(info[i + 1], int):
@@ -1100,9 +1140,15 @@ def Buff(user, target, buffName, buffData, buffStacks, buffStatus):
         elif not buffDuration == "":
             applyStatus(user, target, buffName, 0, buffStacks, buffDuration, user.id, False)
 
-def applyStatus(user, target, status, stacks, stacksChange, duration, text, replaceOriginal):
+def applyStatus(user, target, status, stacks, stacksChange, duration, text, replaceOriginal, frame=None):
     global override, overrideContext, skillCondition, buffDataCollecting, statusStacksApplied
 
+    userVisual = allVisuals[allEntities.index(user)]
+    targetVisual = allVisuals[allEntities.index(target)]
+    userDiv = document.getElementById(userVisual.id)
+    targetDiv = document.getElementById(targetVisual.id)
+
+    statusBefore = copy.deepcopy(target.status)
     carrier = False
     hitList = []
     unhitList = ["AMMO"]
@@ -1169,7 +1215,25 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
     if status == "DRUNK" :
         applyStats(user, target, "DAMAGEUP", 0.25 * stacksChange)
         applyStats(user, target, "ACCURACY", -0.25 * stacksChange)
-    
+
+    statusAfter = copy.deepcopy(target.status)
+    if frame:
+        for i in statusBefore:
+            carrier = next((s for s in statusAfter if s[0] == i[0]), None)
+            if carrier:
+                if not(carrier[1] == i[1] and carrier[2] == i[2]):
+                    print("Status Changed:", i, "become", carrier)
+                    animAdd(updateStatusChange(targetVisual, i, carrier), frame, False)
+            else:
+                print("Status removed:", i)
+                animAdd(updateStatusRemove(targetVisual, i[0]), frame, False)
+        
+        for i in statusAfter:
+            carrier = next((s for s in statusBefore if s[0] == i[0]), None)
+            if not carrier:
+                print("Status added:", i)
+                animAdd(updateStatusAdd(targetVisual, i), frame, False)
+
     for i in range(len(user.traits)):
         traitInfo = traitList[traitName.index(user.traits[i][0])]
         for j in traitInfo.info:
@@ -1247,11 +1311,11 @@ def hurt(user, target, damage, cause, respectiveAnimName=None):
             locatedFrame = animlocateFrame(respectiveAnimName, cause)
             animAdd(updateHp(targetVisual, -damage), locatedFrame, False)
             if cause in ["damage", "selfDamage", "bleed"]:
-                animAdd(effectNumber(damage, targetDiv, "red", 1000), locatedFrame, False)
+                animAdd(effectNumber(damage, targetDiv, "#b32d2d", 1000), locatedFrame, False)
             elif cause in ["plague"]:
-                animAdd(effectNumber(damage, targetDiv, "green", 1000), locatedFrame, False)
+                animAdd(effectNumber(damage, targetDiv, "#2e7345", 1000), locatedFrame, False)
             elif cause in ["die"]:
-                animAdd(effectNumber(damage, targetDiv, "black", 1000), locatedFrame, False)
+                animAdd(effectNumber(damage, targetDiv, "#231f26", 1000), locatedFrame, False)
         allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
         recordingLastDamage[allEntities.index(target)] = damage
         carrier = next((s for s in target.status if s[0] == "SWARM"), [0, 0, 0, 0])[1]
@@ -1275,7 +1339,19 @@ def hurt(user, target, damage, cause, respectiveAnimName=None):
     
     deathCheck(user)
 
-def heal(user, target, heal):
+def heal(user, target, heal, respectiveAnimName=None):
+    global allEntities, allVisuals
+
+    userMates = partyList + summonList if user in partyList or summonList else enemyList
+    userNotMates = enemyList if user in partyList or summonList else partyList + summonList
+    targetMates = partyList + summonList if target in partyList or summonList else enemyList
+    targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
+
+    userVisual = allVisuals[allEntities.index(user)]
+    targetVisual = allVisuals[allEntities.index(target)]
+    userDiv = document.getElementById(userVisual.id)
+    targetDiv = document.getElementById(targetVisual.id)
+
     hoi = False
     for i in range(len(target.traits)):
         traitInfo = traitList[traitName.index(target.traits[i][0])]
@@ -1284,6 +1360,10 @@ def heal(user, target, heal):
                 hoi = True
     if not hoi:
         target.hp += heal
+        if respectiveAnimName:
+            locatedFrame = animlocateFrame(respectiveAnimName, "heal")
+            animAdd(updateHp(targetVisual, heal), locatedFrame, False)
+            animAdd(effectNumber(heal, targetDiv, "#2db34e", 1000), locatedFrame, False)
         if target.hp > target.maxhp:
             target.hp = target.maxhp
 
@@ -1429,7 +1509,7 @@ async def combatRoomGen():
 
     carrier = [enemy1, enemy2, enemy3, enemy4]
     for i in range(len(carrier)):
-       carrier[i] = EnemyData("", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+       carrier[i] = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
 
     difficulty = currentLevel.difficulty
 
