@@ -15,16 +15,16 @@ class TraitData:
     def load_from(self, other: "TraitData"):
         self.__dict__.update(other.__dict__)
 
-#all info refs: all should start with: self or not, mates or not, aoe or not.
+#all info refs: all should start with: trigger, self or not, mates or not, aoe or not.
 
 neutralTraitName =\
 ["Swarm", "One With Nature", "Slippery"]
 neutralTraitList =\
-[TraitData("Swarm", "", 0, [["onSummon", True, True, False, "swarm", 1]],\
+[TraitData("Swarm", "", 0, [["swarm", True, True, False]],\
 "On Summon: gain 1 SWARM.",
 "Teamwork makes the nightmare!",\
 [["onSummon", "user joins its bretheren!"]], 0, ""),\
-TraitData("One With Nature", "", 0, [["invulnerable"]],\
+TraitData("One With Nature", "", 0, [["invulnerable", True, True, False]],\
 "Yeah, it can't die. Or get damaged. I mean...",\
 "Immune to all damage and cannot die.",
 [], 0, ""),\
@@ -44,12 +44,12 @@ plantTraitList =\
 cultistTraitName =\
 ["Faith-fueled", "Conduit Of Faith"]
 cultistTraitList =\
-[TraitData("Faith-fueled", "trigger", 0, 
-[["onGainStatus", True, False, False, "FAITH", "checkStacks", "FAITH", "reach", ["secondaryNumber"], "trigger"], ["onTrigger", True, True, False, "", "useSkill", 0]], 
+[TraitData("Faith-fueled", "trigger", 0, [["onGainStatus", True, False, False, "FAITH", "checkStacks", "FAITH", "reach", ["secondaryNumber"], "trigger"],
+["onTrigger", True, True, False, "", "useSkill", 0]], 
 "Better than diesel.", 
 "On reaching stacksRequired FAITH: use skillUsed.",
 [["onGainStatus", "user glows brighter!"], ["onTrigger", "user surges with (un)holy energy!"]], 50, ""),
-TraitData("Conduit Of Faith", "", 0, [["conduit"]],\
+TraitData("Conduit Of Faith", "", 0, [["conduit", True, True, False]],\
 "All prayers divert to here. Think of it as 5G.",\
 "When anyone Prays: gain that much FAITH.",
 [], 0, "")]

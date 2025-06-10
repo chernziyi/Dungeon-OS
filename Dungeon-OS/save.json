@@ -19,7 +19,14 @@
                     0
                 ]
             ],
-            "status": [],
+            "status": [
+                [
+                    "BLEED", 
+                    10,
+                    "",
+                    ""
+                ]
+            ],
             "equipment": [],
             "equipmentSlots": 2,
             "attackText": "user does some on-site practice!",

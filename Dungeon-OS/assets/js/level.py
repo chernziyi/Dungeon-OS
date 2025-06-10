@@ -9,7 +9,7 @@ class LevelData:
     def load_from(self, other: "LevelData"):
         self.__dict__.update(other.__dict__)
 
-combatZone0 = [LevelData(1, ["Bee"])] #debugging only
+combatZone0 = [LevelData(1, ["Honeybee"])] #debugging only
 
-combatZone1 = [LevelData(1, ["Bee"]),\
+combatZone1 = [LevelData(1, ["Honeybee"]),\
                LevelData(1, ["Mindless Roots"])]

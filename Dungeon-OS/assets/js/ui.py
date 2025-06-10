@@ -231,16 +231,26 @@ async def WaitForAnimFinished():
     while animRunning:
         await asyncio.sleep(0.01)
 
-def animLoad(animName, info, div, frame):
+def animLoad(animName, info, div, frame, self, targets, AOE, matesList, notMatesList):
     global animStorage, animKeyFrames
+
+    if targets:
+        targetList = matesList
+    else:
+        targetList = notMatesList
+
     if info[0] == "replaceImage":
         anim = replaceImage(div, info[1], info[2])
         animAdd(anim, frame, True)
         animStorage.append(anim)
-        animKeyFrames.append([animName, info[3]])
+        carrier = info[3]
+        if "AOE" in carrier:
+            carrier.remove("AOE")
+            carrier * len(targetList)
+        animKeyFrames.append([animName, carrier])
 
 def animlocateFrame(animName, keyframe):
-    # print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
+    print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
     anim = None
     for i in animKeyFrames:
         if i[0] == animName and keyframe in i[1]:
@@ -257,7 +267,10 @@ def animlocateFrame(animName, keyframe):
             return None
     else:
         return None
-    
+
+def animSwapTarget(anim, newTarget, animType):
+    print("hi")
+
 def animSeekAndDestroy(animName, keyframe):
     global animKeyFrames
     for i in animKeyFrames:
@@ -305,12 +318,14 @@ def animRun():
     for animFunc in currentFrame:
         animFunc(oneDone)   
 
-def updateHp(target, hp): 
+def updateHp(target, hp, max): 
     def anim(done):
         characterDiv = document.getElementById(target.id)
         hpDiv = characterDiv.querySelector("#hp")
         if hpDiv:
             target.hp += hp
+            if max:
+                target.maxhp += hp
             if target.hp > target.maxhp:
                 target.hp = target.maxhp
             hpDiv.innerHTML = f"HP: {target.hp} / {target.maxhp}"
@@ -323,9 +338,11 @@ def updateHp(target, hp):
         setTimeout(create_proxy(lambda: done()), 0)
     return anim
     
-def updateJuice(target, juice):
+def updateJuice(target, juice, max=False):
     def anim(done):
         target.juice += juice
+        if max:
+                target.maxjuice += juice
         if target.juice > target.maxjuice:
             target.juice = target.maxjuice
         characterDiv = document.getElementById(target.id)

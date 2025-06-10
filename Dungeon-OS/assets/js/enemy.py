@@ -32,9 +32,9 @@ class EnemyData:
 
 #Bees: suicide bombers with necromany
 BeeName =\
-["Bee", "Hardworking Bee"]
+["Honeybee", "Hardworking Bee"]
 BeeStats =\
-[EnemyData("Bee", "Bee", 15, 15, 5, 0, 5, 0, [], [], [["Attack", 0], ["Kamikaze", 0]], [], [], [],\
+[EnemyData("Honeybee", "Honeybee", 15, 15, 5, 0, 5, 0, [], [], [["Attack", 0], ["Kamikaze", 0]], [], [], [],\
 ["default", [0], "hpBelow", 0.5, [1]],\
 [["Honeypot", 2], ["Nope", 1], ["Coins", 10]],\
 "user goes in for a sting!", True, False),
@@ -59,9 +59,9 @@ GoldbotStats =\
 []
 
 #Cultists: OBELISK-CHAN NOTICE ME!
-CultistName =\
+CultName =\
 ["Obelisk", "Cultist"]
-CultistStats =\
+CultStats =\
 [EnemyData("Obelisk", "Obelisk", 0, 0, 0, 0, 10, 0, [], [["One With Nature", 0], ["Faith-fueled", 30], ["Conduit Of Faith", 0]], [["The Calling", 0]], [], [], [],\
 ["none"],\
 [["Nope", 1], ["Coins", 30]],\
@@ -101,5 +101,5 @@ ShamanSummonStats =\
 [["Nope", 1]],\
 "user can't do jack. It's SAND", True, False)]
 
-enemyName = BeeName + PlantName + GoldbotName + CultistName + OozeName + PirateSummonName + RavenSummonName + ShamanSummonName
-enemyStats = BeeStats + PlantStats + GoldbotStats + CultistStats + OozeStats + PirateSummonStats + RavenSummonStats + ShamanSummonStats
+enemyName = BeeName + PlantName + GoldbotName + CultName + OozeName + PirateSummonName + RavenSummonName + ShamanSummonName
+enemyStats = BeeStats + PlantStats + GoldbotStats + CultStats + OozeStats + PirateSummonStats + RavenSummonStats + ShamanSummonStats

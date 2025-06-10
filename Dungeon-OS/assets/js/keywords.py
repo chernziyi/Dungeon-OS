@@ -16,25 +16,27 @@ statusName =\
 statusList =\
 [KeywordData("AMMO", ["assets/sprites/Status/Png/Ammo.png"], "", "How many of those shots your gun can do. Use wisely!",\
 [["gain", "user loads in some ammo!"], ["lose", "user used up stacks ammo!"]]),\
-KeywordData("CHANT", ["assets/sprites/Status/Png/Chant1.png", "assets/sprites/Status/Png/Chant2.png"], "stacks", "Time till your next skill. Cooldown, much?",\
+KeywordData("CHANT", ["assets/sprites/Status/Png/Chant1.png", "assets/sprites/Status/Png/Chant2.png"],\
+"stacks", "Time till your next skill. Cooldown, much?",\
 [["lose", "target keeps on chanting!"]]),\
-KeywordData("DRUNK", ["assets/sprites/Status/Png/Ammo.png"], "", "Not a sin, just an addiction. +25% Attack, -25% Accuracy per stack, lose 1 stack at end of turn.",\
+KeywordData("DRUNK", ["assets/sprites/Status/Png/Drunk1.png", "assets/sprites/Status/Png/Drunk2.png", "assets/sprites/Status/Png/Drunk3.png", "assets/sprites/Status/Png/Drunk4.png"],\
+"stacks", "Not a sin, just an addiction. +25% Attack, -25% Accuracy per stack, lose 1 stack at end of turn.",\
 [["gain", "target feels a bit tipsy!"], ["lose", "user is slowly revovering!"]]),\
 KeywordData("BLEED", ["assets/sprites/Status/Png/Bleed.png"], "", "'Tis but a scratch.' Deal damage to self equal to stacks at the start of your turn and reduce BLEED by half. Gain 10% of damage dealt by attacks as BLEED.",\
 [["gain", "target starts bleeding!"], ["trigger", "target loses some blood!"]]),\
-KeywordData("HEMOTOXIN", ["assets/sprites/Status/Png/Ammo.png"], "", "Your next instance of bleed damage does not reduce BLEED by half.",\
+KeywordData("HEMOTOXIN", ["assets/sprites/Status/Png/Hemotoxin.png"], "", "Your next instance of bleed damage does not reduce BLEED by half.",\
 [["trigger", "The wound won't heal!"]]),\
-KeywordData("INFUSE", ["assets/sprites/Status/Png/Ammo.png"], "", "Infuse buffs last forever! At the cost of your max juice, however.",\
+KeywordData("INFUSE", [""], "", "Infuse buffs last forever! At the cost of your max juice, however.",\
 [["extract", "Extraction Complete."]]),\
-KeywordData("PLAGUE", ["assets/sprites/Status/Png/Ammo.png"], "", "Increases by 1 at the start of each turn. When stacks exceed 5, BOOM! (Deals 5 damage per stack.)",\
+KeywordData("PLAGUE", ["assets/sprites/Status/Png/Plague.png"], "", "Increases by 1 at the start of each turn. When stacks exceed 5, BOOM! (Deals 5 damage per stack.)",\
 [["gain", "target doesn't look good."], ["trigger", "An Outbreak!"]]),\
-KeywordData("TAUNT", ["assets/sprites/Status/Png/Ammo.png"], "", "'He's really had it out for yer!'",\
+KeywordData("TAUNT", ["assets/sprites/Status/Png/Taunt.png"], "", "'He's really had it out for yer!'",\
 [["gain", "target looks... angrier?"]]),\
-KeywordData("STEALTH", ["assets/sprites/Status/Png/Ammo.png"], "", "You won't be a target. That is, until you strike...",\
+KeywordData("STEALTH", ["assets/sprites/Status/Png/Stealth.png"], "", "You won't be a target. That is, until you strike...",\
 [["gain", "target is now out of sight and mind!"], ["trigger", "target cannot wait any longer!"]]),
-KeywordData("UNDYING", ["assets/sprites/Status/Png/Ammo.png"], "", "Rebirth after death, but still close to it.",\
+KeywordData("UNDYING", ["assets/sprites/Status/Png/Undying.png"], "", "Rebirth after death, but still close to it.",\
 [["trigger", "target rises from the dead!"]]),
-KeywordData("FAITH", ["assets/sprites/Status/Png/Ammo.png"], "", "As one believes enough, they might see what truly lies beyond our world... Reduces when hurt.",\
+KeywordData("FAITH", ["assets/sprites/Status/Png/Faith.png"], "", "As one believes enough, they might see what truly lies beyond our world... Reduces when hurt.",\
 [["gain", "target glows brighter!"]])]
 
 statsName =\

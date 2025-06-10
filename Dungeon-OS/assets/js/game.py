@@ -225,7 +225,7 @@ def addEnemy(idk):
         enemyNumber -= 1
         enemyList.remove(enemy)
 
-def addSummon(summoner, idk):
+def addSummon(summoner, idk, frame):
     global summonList, summonNumber, swarm, summonFaction, allEntities, allVisuals, summonVisual1, summonVisual2, summonVisual3, summonVisual4
     summonData = enemyStats[enemyName.index(idk)]
 
@@ -242,7 +242,18 @@ def addSummon(summoner, idk):
         traitInfo = traitList[traitName.index(summonData.traits[i][0])]
         for j in traitInfo.info:
             if j[0] == "onSummon":
-                traitEffect(summonData, summonData, traitInfo, j, "onSummon")
+                traitEffect(summonData, summoner, traitInfo, j, "onSummon", frame)
+            elif j[0] == "swarm":
+                if sum(1 for s in summonList if s.actualId == summon.actualId) > 1:
+                    swarm = True
+                    victim = next((s for s in summonList if s.actualId == summon.actualId), None)
+                    victimVisual = allVisuals[allEntities.index(victim)]
+                    victimDiv = document.getElementById(victimVisual.id)
+                    victim.maxhp += summon.maxhp
+                    victim.hp += summon.hp
+                    victim.strength += summon.strength
+                    animAdd(updateHp(victimVisual, 0, True), frame, False)
+                    applyStatus(summoner, victim, "SWARM", 0, 1, "", "-", False, frame)
     
     if not swarm:
         summonVisual = allVisuals[allEntities.index(summon)]
@@ -315,7 +326,7 @@ async def endOfCombat():
         visual.load_from(partyList[i])
 
     for i in range(len(currentLevel.enemyRoster)):
-        looted = enemyList[enemyName.index(currentLevel.enemyRoster[i])]
+        looted = enemyStats[enemyName.index(currentLevel.enemyRoster[i])]
         Loot(looted, "-")
     
     removables = enemyList + summonList
@@ -500,14 +511,36 @@ async def EndOfTurn(user):
             applyStatus(user, user, "DRUNK",0 ,0, -1, "-", False)
     
     if isinstance (user, PlayerData):
-        updateJuice(user, math.ceil(user.juice * 0.1))
+        updateJuice(user, math.ceil(user.juice * 0.1, False), False)
 
 async def StartOfTurn(user):
-    global override, overrideContext, skillCondition, cantripUsed
+    global override, overrideContext, skillCondition, cantripUsed, animFrame
+    animFrame = 0
+
+    userMates = partyList + summonList if user in partyList or summonList else enemyList
+    userNotMates = enemyList if user in partyList or summonList else partyList + summonList
+
+    userDiv = document.getElementById(user.id)
 
     carrier = user.status.copy()
     skillCondition = "-"
     cantripUsed = False
+    
+    if isinstance(user, PlayerData):
+        currentAnimName = f"{user.classId}StartOfTurn"
+    elif isinstance(user, EnemyData):
+        currentAnimName = f"{user.actualId}StartOfTurn"
+
+    if currentAnimName in animName:
+        animChart = AnimData("", [])
+        animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
+
+        for i in animChart.info:
+            print(i)
+            animLoad(currentAnimName, i, userDiv, animFrame, True, True, False, userMates, userNotMates)
+            animFrame += 1
+
+    effectFrame = animlocateFrame(currentAnimName, "effect")
 
     for i in range(len(user.traits)):
         traitInfo = traitList[traitName.index(user.traits[i][0])]
@@ -515,23 +548,32 @@ async def StartOfTurn(user):
             applyStatus(user, user, f"{traitInfo.id}: Uses", user.traits[i][1], 0, "", "", False)
         for j in traitInfo.info:
             if j[0] == "startOfTurn":
-                traitEffect(user, user, traitInfo, j, "startOfTurn")
+                traitEffect(user, user, traitInfo, j, "startOfTurn", effectFrame)
 
     for i in range(len(carrier)):
         if carrier[i][0] == "BLEED":
-            hurt(user, user, carrier[i][1], "bleed")
+            hurt(user, user, carrier[i][1], "bleedTrigger", currentAnimName)
             if next((s for s in user.status if s[0] == "HEMOTOXIN"), [0, 0, 0])[1] > 0:
-                applyStatus(user, user, "HEMOTOXIN", 0, -1, "", "-", False)
+                applyStatus(user, user, "HEMOTOXIN", 0, -1, "", "-", False, effectFrame)
             else:
-                applyStatus(user, user, "BLEED", 0, math.ceil(carrier[i][1] * -0.5), "", "-", False)
+                applyStatus(user, user, "BLEED", 0, math.ceil(carrier[i][1] * -0.5), "", "-", False, effectFrame)
         elif carrier[i][0] == "PLAGUE":
-            applyStatus(user, user, "PLAGUE", 0, 1, "", "-", False)
+            applyStatus(user, user, "PLAGUE", 0, 1, "", "-", False, effectFrame)
         elif not (carrier[i][2] == "" or "INFUSE"):
-            applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False)
+            applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False, effectFrame)
+    
+    animStart()
+    await WaitForAnimFinished()
 
 def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, insertedFrame=None):
     global animFrame
-    animFrame = insertedFrame + 1
+    userMates = partyList + summonList if user in partyList or summonList else enemyList
+    userNotMates = enemyList if user in partyList or summonList else partyList + summonList
+    targetMates = partyList + summonList if target in partyList or summonList else enemyList
+    targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
+
+    if insertedFrame:
+        animFrame = insertedFrame + 1
     trait = copy.deepcopy(actualTrait)
     traitInfo = copy.deepcopy(actualTraitInfo)
     triggerSuccess = True
@@ -558,9 +600,9 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
 
         if insertedFrame:
             if isinstance(user, PlayerData):
-                currentAnimName = f"{user.classId}UseTrait{trait.id}{traitCondition}"
+                currentAnimName = f"{user.classId}UseTrait{trait.id} {traitCondition}"
             elif isinstance(user, EnemyData):
-                currentAnimName = f"{user.id}UseTrait{trait.actualId}{traitCondition}"
+                currentAnimName = f"{user.actualId}UseTrait{trait.id} {traitCondition}"
             
             if currentAnimName in animName:
                 animChart = AnimData("", [])
@@ -568,7 +610,7 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
 
                 for i in animChart.info:
                     print(i)
-                    animLoad(currentAnimName, i, userDiv, animFrame)
+                    animLoad(currentAnimName, i, userDiv, animFrame, traitInfo[2], traitInfo[3], traitInfo[4], userMates, userNotMates)
                     animFrame += 1
             else:
                 currentAnimName = None
@@ -701,6 +743,11 @@ async def useSkill(user, faction, skill):
 def skillEffect(user, target, skillInfo, AOE):
     global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, animFrame
 
+    userMates = partyList + summonList if user in partyList or summonList else enemyList
+    userNotMates = enemyList if user in partyList or summonList else partyList + summonList
+    targetMates = partyList + summonList if target in partyList or summonList else enemyList
+    targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
+
     userDiv = document.getElementById(user.id)
 
     buffData.clear()
@@ -715,7 +762,10 @@ def skillEffect(user, target, skillInfo, AOE):
     if isinstance(user, PlayerData):
         currentAnimName = f"{user.classId}UseSkill{skillInfo.id}"
     elif isinstance(user, EnemyData):
-        currentAnimName = f"{user.id}UseSkill{skillInfo.actualId}"
+        currentAnimName = f"{user.actualId}UseSkill{skillInfo.id}"
+    
+    if skillCondition == "chant" and currentAnimName:
+        currentAnimName = f"{currentAnimName}Success"
     
     if currentAnimName in animName:
         animChart = AnimData("", [])
@@ -723,13 +773,13 @@ def skillEffect(user, target, skillInfo, AOE):
 
         for i in animChart.info:
             print(i)
-            animLoad(currentAnimName, i, userDiv, animFrame)
+            animLoad(currentAnimName, i, userDiv, animFrame, skillInfo.self, skillInfo.targets, skillInfo.AOE, userMates, userNotMates)
             animFrame += 1
         
         if infusion and skillCondition != "chant" and isinstance(user, PlayerData):
             user.juice -= skillInfo.juiceCost
             locatedFrame = animlocateFrame(currentAnimName, "useSkill")
-            animAdd(updateJuice(userVisual, -skillInfo.juiceCost), locatedFrame, False)
+            animAdd(updateJuice(userVisual, -skillInfo.juiceCost, False), locatedFrame, False)
 
     else:
         currentAnimName = None
@@ -924,7 +974,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
             else:
                 skillCondition = "-"
         if info[i] == "summon":
-            addSummon(user, info[i + 1])
+            addSummon(user, info[i + 1], currentFrame)
         if info[i] == "drunk":
             info = updateInfo(info, i, 4, target, user, name)
             if random.uniform(0, 1) + info[i + 1] >= 1:
@@ -976,9 +1026,9 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                         Narrate(f"Extraction complete.")
                     else:
                         Narrate(f"Nothing was extracted.")
-                userVisual.maxjuice -= cost
+                userVisual.juice += cost
                 locatedFrame = animlocateFrame(respectiveAnimName, "useSkill")
-                animAdd(updateJuice(userVisual, 0), locatedFrame, False)
+                animAdd(updateJuice(userVisual, -cost, True), locatedFrame, True)
         if info[i] == "buff":
             info = updateInfo(info, i, info.index("buffEnd") - i + 1, target, user, name)
             buffDataCollecting = True
@@ -1011,25 +1061,6 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
             else: 
                 for j in range(info[i + 2]):
                     Loot(deceased, info[i + 1])
-        if info[i] == "swarm":
-            if summonFaction == "summon":
-                if sum(1 for s in summonList if s.id == user.id) > 1:
-                    swarm = True
-                victim = next((s for s in summonList if s.id == user.id), None)
-                bodies = info[i + 1]
-            elif summonFaction == "enemy":
-                if sum(1 for s in enemyList if s.id == user.id) > 1:
-                    swarm = True
-                victim = next((s for s in enemyList if s.id == user.id), None)
-                bodies = info[i + 1]
-            if next((s for s in victim.status if s[0] == "SWARM"), [0, 0, 0, 0])[1] == 0:
-                modifier = -1
-            else:
-                modifier = 0
-            victim.maxhp += user.maxhp * (bodies + modifier)
-            victim.hp += user.hp * (bodies + modifier)
-            victim.strength += user.strength * (bodies + modifier)
-            applyStatus(user, victim, "SWARM", 0, bodies, "", "-", False, currentFrame)
         if info[i] == "cleanse":
             info = updateInfo(info, i, 2, target, user, name)
             cleansables = []
@@ -1179,7 +1210,7 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         skillCondition = "chant"
     
     if status == "PLAGUE" and next((s for s in target.status if s[0] == "PLAGUE"), None)[1] >= target.hp * 5:
-        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5, "plague")
+        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5, "plagueTrigger")
         applyStatus(user, target, "PLAGUE", 0, -(next((s for s in target.status if s[0] == "PLAGUE"), None)[1]), "", "-", False)
 
     for i in range(len(hitList)):
@@ -1309,10 +1340,10 @@ def hurt(user, target, damage, cause, respectiveAnimName=None):
         target.hp -= damage
         if respectiveAnimName:
             locatedFrame = animlocateFrame(respectiveAnimName, cause)
-            animAdd(updateHp(targetVisual, -damage), locatedFrame, False)
-            if cause in ["damage", "selfDamage", "bleed"]:
+            animAdd(updateHp(targetVisual, -damage, False), locatedFrame, False)
+            if cause in ["damage", "selfDamage", "bleedTrigger"]:
                 animAdd(effectNumber(damage, targetDiv, "#b32d2d", 1000), locatedFrame, False)
-            elif cause in ["plague"]:
+            elif cause in ["plagueTrigger"]:
                 animAdd(effectNumber(damage, targetDiv, "#2e7345", 1000), locatedFrame, False)
             elif cause in ["die"]:
                 animAdd(effectNumber(damage, targetDiv, "#231f26", 1000), locatedFrame, False)
@@ -1362,7 +1393,7 @@ def heal(user, target, heal, respectiveAnimName=None):
         target.hp += heal
         if respectiveAnimName:
             locatedFrame = animlocateFrame(respectiveAnimName, "heal")
-            animAdd(updateHp(targetVisual, heal), locatedFrame, False)
+            animAdd(updateHp(targetVisual, heal, False), locatedFrame, False)
             animAdd(effectNumber(heal, targetDiv, "#2db34e", 1000), locatedFrame, False)
         if target.hp > target.maxhp:
             target.hp = target.maxhp

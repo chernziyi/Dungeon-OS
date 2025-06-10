@@ -163,8 +163,8 @@ SkillData("Breadcrumbs", 5, False, True, False, False, 1, 100, ["cantrip", "summ
 shamanSkillName =\
 ["Bolt", "Chilling Air", "Slippery Sand"]
 shamanSkillList =\
-[SkillData("Bolt", 10, False, False, True, False, 1, 0.8, ["chant", 1, "damage", "str", 2, 0.2],\
-"Zip! Zap! Zop!.",\
+[SkillData("Bolt", 10, False, False, True, False, 1, 0.8, ["chant", 1, "damage", "str", 2.5, 0.2],\
+"Zip! Zap! Zop!",\
 "Deal damageAmount damage to all enemies.",\
 [["-", "user mutters some words."], ["chant", "user summons LIGHTNING!"]], 50, ""),\
 SkillData("Chilling Air", 15, False, False, True, False, 1, 100, ["buffDuration", "", "buff", "str", -1, "spd", -1, "buffEnd"],\
