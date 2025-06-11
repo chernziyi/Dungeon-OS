@@ -1,6 +1,6 @@
 from ui import generateWindow, generateStatusWindow, generateBagWindow, generateOSScreen,\
 setPosition, choose, Notification, addText, addDescriptionToImage, makeIconDraggable, generateSaveWindow,\
-generateShopWindow, effectNumber, animlocateFrame, animAdd, animStart, animLoad, updateHp, updateJuice, animSeekAndDestroy,\
+generateShopWindow, effectNumber, animlocateFrame, animlocateName, animAdd, animStart, animLoad, updateHp, updateJuice, animSeekAndDestroy,\
 WaitForAnimFinished, updateStatusAdd, updateStatusChange, updateStatusRemove
 from player import PlayerData, classes, classList
 from enemy import EnemyData, enemyStats, enemyName
@@ -119,6 +119,7 @@ summonFaction = ""
 swarm = False
 
 animFrame = 0
+currentFrame = 0
 
 async def Main():
     setPosition("Choice.exe", "0px", "0px", "center")
@@ -319,11 +320,13 @@ async def endOfCombat():
     for i in range(len(partyList)):
         clone = cloneParty[party.index(partyList[i])]
         visual = allVisuals[allEntities.index(partyList[i])]
-        placeholder = PlayerData(partyList[i].id, partyList[i].classId, partyList[i].hp, clone.maxhp, clone.juice,\
+        placeholder = PlayerData(partyList[i].id, partyList[i].classId, clone.hp, clone.maxhp, clone.juice,\
         clone.maxjuice, clone.strength, clone.defense, clone.speed, clone.counter, clone.specialStats,\
         clone.traits, clone.skills, clone.status, clone.equipment, clone.equipmentSlots, clone.attackText, partyList[i].alive)
         partyList[i].load_from(placeholder)
         visual.load_from(partyList[i])
+        animAdd(updateHp(visual, 0, False), 0, True)
+        animAdd(updateJuice(visual, 0, False), 0, False)
 
     for i in range(len(currentLevel.enemyRoster)):
         looted = enemyStats[enemyName.index(currentLevel.enemyRoster[i])]
@@ -334,6 +337,9 @@ async def endOfCombat():
         characterDiv = document.getElementById(removables[i].id)
         characterDiv.remove()
         removables[i] = EnemyData("", "", 0, 0, 0, 0, 0, 0, [], [], [], [], [], [], [], [], "", True, False)
+
+    animStart()
+    await WaitForAnimFinished()
 
     for i in partyList:
         await upgrade(i, 3)
@@ -511,7 +517,7 @@ async def EndOfTurn(user):
             applyStatus(user, user, "DRUNK",0 ,0, -1, "-", False)
     
     if isinstance (user, PlayerData):
-        updateJuice(user, math.ceil(user.juice * 0.1, False), False)
+        updateJuice(user, math.ceil(user.juice * 0.1), False)
 
 async def StartOfTurn(user):
     global override, overrideContext, skillCondition, cantripUsed, animFrame
@@ -833,7 +839,7 @@ def voiceline(user, target, name, useText, condition):
         Narrate(f"{voiceline}")
 
 def Effect(user, target, name, info, cost, respectiveAnimName=None):
-    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, swarm
+    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, swarm, currentFrame, coins
     userMates = partyList + summonList if user in partyList or summonList else enemyList
     userNotMates = enemyList if user in partyList or summonList else partyList + summonList
     targetMates = partyList + summonList if target in partyList or summonList else enemyList
@@ -1055,12 +1061,12 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
         if info[i] == "loot":
             info = updateInfo(info, i, 3, target, user, name)
             if info[i + 1] == "coins":
-                Loot(info[i + 2], "coins")
+                coins += info[i + 2]
             elif info[i + 1] in itemName:
                 getItem(info[i + 1], info[i + 2])
             else: 
                 for j in range(info[i + 2]):
-                    Loot(deceased, info[i + 1])
+                    Loot(target, info[i + 1])
         if info[i] == "cleanse":
             info = updateInfo(info, i, 2, target, user, name)
             cleansables = []
@@ -1097,7 +1103,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                             if not k[4] == "":
                                 if j[1] >= k[4]:
                                     j[1] -= k[4]
-                                    traitEffect(user, target, trait, k, "onTrigger")
+                                    traitEffect(user, target, trait, k, "onTrigger", currentFrame)
         if info[i] == "checkStacks":
             info = updateInfo(info, i, 4, target, user, name)
             currentStacks = next((s for s in target.status if s[0] == info[i + 1]), [0, 0, 0, 0])[1]
@@ -1114,7 +1120,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                 if j[0] == name:
                     for k in trait.info:
                         if k[0] == "onTrigger":
-                            traitEffect(user, target, trait, k, "onTrigger")
+                            traitEffect(user, target, trait, k, "onTrigger", currentFrame)
 
         if buffDataCollecting:
             buffData.append(info[i])
@@ -1210,7 +1216,8 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         skillCondition = "chant"
     
     if status == "PLAGUE" and next((s for s in target.status if s[0] == "PLAGUE"), None)[1] >= target.hp * 5:
-        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5, "plagueTrigger")
+        triggerAnimName = animlocateName(frame, "plagueTrigger")
+        hurt(target, target, (next((s for s in target.status if s[0] == "PLAGUE"), None)[1]) * 5, "plagueTrigger", triggerAnimName)
         applyStatus(user, target, "PLAGUE", 0, -(next((s for s in target.status if s[0] == "PLAGUE"), None)[1]), "", "-", False)
 
     for i in range(len(hitList)):
@@ -1270,14 +1277,14 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         for j in traitInfo.info:
             if j[0] == "onApplyStatus":
                 if j[4] == status.upper():
-                    traitEffect(user, target, traitInfo, j, "onApplyStatus")
+                    traitEffect(user, target, traitInfo, j, "onApplyStatus", frame)
     
     for i in range(len(target.traits)):
         traitInfo = traitList[traitName.index(target.traits[i][0])]
         for j in traitInfo.info:
             if j[0] == "onGainStatus":
                 if j[4] == status.upper():
-                    traitEffect(target, user, traitInfo, j, "onGainStatus")
+                    traitEffect(target, user, traitInfo, j, "onGainStatus", frame)
 
 def applyStats(user, target, stat, val):
     carrier = False
@@ -1368,7 +1375,7 @@ def hurt(user, target, damage, cause, respectiveAnimName=None):
                 target.strength -= math.floor(target.strength / carrier * difference)
                 applyStatus(user, target, "SWARM", 0, -difference, "", "-", False)
     
-    deathCheck(user)
+        deathCheck(user, locatedFrame)
 
 def heal(user, target, heal, respectiveAnimName=None):
     global allEntities, allVisuals
@@ -1439,9 +1446,11 @@ def UpdateBagSwap(old, new):
         bag[oldPos] = new
         bag[newPos] = old
 
-def deathCheck(killer):
-    global combatEnd, deceased
+def deathCheck(killer, frame):
+    global combatEnd, deceased, animFrame
     hoi = False
+
+    animFrame = frame + 1
 
     existingEntities = partyList + enemyList + summonList
     for i in range(len(existingEntities)):
@@ -1455,7 +1464,30 @@ def deathCheck(killer):
                 if existingEntities[i].alive:
                     deceased = existingEntities[i]
                     deceased.alive = False
+
                     Narrate(f"{deceased.id} dies!")
+                    deadVisual = allVisuals[allEntities.index(deceased)]
+                    deadDiv = document.getElementById(deadVisual.id)
+                    deadMates = partyList + summonList if deceased in partyList or summonList else enemyList
+                    deadNotMates = enemyList if deceased in partyList or summonList else partyList + summonList
+
+                    deadVisual.alive = False
+
+                    if isinstance(deceased, PlayerData):
+                        currentAnimName = f"{deceased.classId}Death"
+                    elif isinstance(deceased, EnemyData):
+                        currentAnimName = f"{deceased.actualId}Death"
+                    
+                    if currentAnimName in animName:
+                        animChart = AnimData("", [])
+                        animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
+
+                        for j in animChart.info:
+                            print(j)
+                            animLoad(currentAnimName, j, deadDiv, animFrame, True, True, False, deadMates, deadNotMates)
+                            animFrame += 1
+                    
+                    deadFrame = animlocateFrame(currentAnimName, "death")
 
                     if deceased in enemyList:
                         carrier = partyList + summonList
@@ -1467,14 +1499,30 @@ def deathCheck(killer):
                             traitInfo = traitList[traitName.index(carrier[j].traits[k][0])]
                             for l in traitInfo.info:
                                 if l[0] == "onEnemyDeath":
-                                    traitEffect(carrier[i], deceased, traitInfo, l, "onEnemyDeath")
+                                    traitEffect(carrier[j], deceased, traitInfo, l, "onEnemyDeath", deadFrame)
                     
                     if next((s for s in deceased.status if s[0] == "UNDYING"), [0, 0, 0, 0])[1] > 0:
+                        animFrame = deadFrame + 1
                         deceased.hp = 1
                         deceased.alive = True
                         deceased.summon = True
-                        applyStatus(deceased, deceased, "UNDYING", 0, -1, "", "", False)
+                        deadVisual.alive = True
+                        deadVisual.summon = True
+                        applyStatus(deceased, deceased, "UNDYING", 0, -1, "", "", False, deadFrame)
                         Narrate(f"{deceased.id} rises from the dead!")
+                        if isinstance(deceased, PlayerData):
+                            currentAnimName = f"{deceased.classId}Rebirth"
+                        elif isinstance(deceased, EnemyData):
+                            currentAnimName = f"{deceased.actualId}Rebirth"
+
+                        if currentAnimName in animName:
+                            animChart = AnimData("", [])
+                            animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
+
+                            for j in animChart.info:
+                                print(j)
+                                animLoad(currentAnimName, j, deadDiv, animFrame, True, True, False, deadMates, deadNotMates)
+                                animFrame += 1
         hoi = False
     
     carrier = partyList + summonList

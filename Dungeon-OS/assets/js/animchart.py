@@ -24,13 +24,20 @@ AnimData("PirateUseSkillCannon CallSuccess", [["replaceImage", "frame1", 210, ["
 AnimData("PirateUseSkillDrinks Up!", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["drunk"]]]),
 AnimData("PirateUseSkillLay Low!", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["stealth"]]])]
 
-pirateAnimMiscName =\
-["PirateStartOfTurn"]
-pirateAnimMiscList =\
-[AnimData("PirateStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+pirateAnimUseTraitName =\
+["PirateUseTraitPlunderer onEnemyDeath"]
+pirateAnimUseTraitList =\
+[AnimData("PirateUseTraitPlunderer onEnemyDeath", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["loot"]]])]
 
-pirateAnimName = pirateAnimUseSkillName + pirateAnimMiscName
-pirateAnimList = pirateAnimUseSkillList + pirateAnimMiscList
+pirateAnimMiscName =\
+["PirateStartOfTurn", "PirateDeath", "PirateRebirth"]
+pirateAnimMiscList =\
+[AnimData("PirateStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("PirateDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("PirateRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
+
+pirateAnimName = pirateAnimUseSkillName + pirateAnimUseTraitName + pirateAnimMiscName
+pirateAnimList = pirateAnimUseSkillList + pirateAnimUseTraitList + pirateAnimMiscList
 
 dissectorAnimUseSkillName =\
 ["DissectorUseSkillAttack", "DissectorUseSkillBloody Jabs", "DissectorUseSkillBandages", "DissectorUseSkillPuncture", "DissectorUseSkillTrade Blows",\
@@ -50,9 +57,11 @@ AnimData("DissectorUseSkillTransplant", [["replaceImage", "frame1", 210, ["useSk
 ["replaceImage", "frame3", 500, ["heal"]]])]
 
 dissectorAnimMiscName =\
-["DissectorStartOfTurn"]
+["DissectorStartOfTurn", "DissectorDeath", "DissectorRebirth"]
 dissectorAnimMiscList =\
-[AnimData("DissectorStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+[AnimData("DissectorStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("DissectoreDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("DissectorRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 dissectorAnimName = dissectorAnimUseSkillName + dissectorAnimMiscName
 dissectorAnimList = dissectorAnimUseSkillList + dissectorAnimMiscList
@@ -68,9 +77,11 @@ AnimData("Qi MasterUseSkillCobalt Infusion", [["replaceImage", "frame1", 210, ["
 AnimData("Qi MasterUseSkillCobalt Infusion", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1000, ["counter"]]])]
 
 qiMasterAnimMiscName =\
-["Qi MasterStartOfTurn"]
+["Qi MasterStartOfTurn", "Qi MasterDeath", "Qi MasterRebirth"]
 qiMasterAnimMiscList =\
-[AnimData("Qi MasterStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+[AnimData("Qi MasterStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("Qi MasterDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("Qi MasterRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 qiMasterAnimName = qiMasterAnimUseSkillName + qiMasterAnimMiscName
 qiMasterAnimList = qiMasterAnimUseSkillList + qiMasterAnimMiscList
@@ -84,9 +95,11 @@ AnimData("RavenUseSkillRusty Graze", [["replaceImage", "frame1", 210, ["useSkill
 AnimData("RavenUseSkillBreadcrumbs", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage", "summon"]]])]
 
 ravenAnimMiscName =\
-["RavenStartOfTurn"]
+["RavenStartOfTurn", "RavenDeath", "RavenRebirth"]
 ravenAnimMiscList =\
-[AnimData("RavenStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+[AnimData("RavenStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("RavenDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("RavenRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 ravenAnimName =\
 ravenAnimUseSkillName + ravenAnimMiscName
@@ -107,9 +120,11 @@ AnimData("ShamanUseSkillSlippery SandChanting", [["replaceImage", "frame1", 1440
 AnimData("ShamanUseSkillSlippery SandSuccess", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["summon"]]])]
 
 shamanAnimMiscName =\
-["ShamanStartOfTurn"]
+["ShamanStartOfTurn", "ShamanDeath", "ShamanRebirth"]
 shamanAnimMiscList =\
-[AnimData("ShamanStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+[AnimData("ShamanStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("ShamanDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("ShamanRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 shamanAnimName =\
 shamanAnimUseSkillName + shamanAnimMiscName
@@ -125,9 +140,11 @@ AnimData("BardUseSkillLeer", [["replaceImage", "frame1", 210, ["useSkill"]], ["r
 AnimData("BardUseSkillFancy Feet", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["buff"]]])]
 
 bardAnimMiscName =\
-["bardStartOfTurn"]
+["BardStartOfTurn", "BardDeath", "BardRebirth"]
 bardAnimMiscList =\
-[AnimData("bardStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]])]
+[AnimData("BardStartOfTurn", [["replaceImage", "frame1", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("BardDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
+AnimData("BardRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 bardAnimName =\
 bardAnimUseSkillName + bardAnimMiscName
@@ -140,8 +157,15 @@ honeybeeAnimUseSkillList =\
 [AnimData("HoneybeeUseSkillAttack", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage"]]]),
 AnimData("HoneybeeUseSkillKamikaze", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage", "die"]]])]
 
-honeybeeAnimName = honeybeeAnimUseSkillName
-honeybeeAnimList = honeybeeAnimUseSkillList
+honeybeeAnimMiscName =\
+["HoneybeeStartOfTurn", "HoneybeeDeath", "HoneybeeRebirth"]
+honeybeeAnimMiscList =\
+[AnimData("HoneybeeStartOfTurn", [["replaceImage", "poyo!", 210, ["effect", "bleedTrigger", "plagueTrigger"]]]),\
+AnimData("HoneybeeDeath", [["replaceImage", "death", 210, ["death"]]]),\
+AnimData("HoneybeeRebirth", [["replaceImage", "rebirth", 210, ["rebirth"]]])]
+
+honeybeeAnimName = honeybeeAnimUseSkillName + honeybeeAnimMiscName
+honeybeeAnimList = honeybeeAnimUseSkillList + honeybeeAnimMiscList
 
 hardworkingBeeAnimUseSkillName =\
 ["Hardworking BeeUseSkillKamikaze", "Hardworking BeeUseSkillOvertime"]
@@ -157,13 +181,14 @@ honeybeeAnimName + hardworkingBeeAnimName
 beeAnimList =\
 honeybeeAnimList + hardworkingBeeAnimList
 
-mindlessRootsAnimUseSkillName =\
-["Mindless RootsUseSkillAttack"]
-mindlessRootsAnimUseSkillList =\
-[AnimData("Mindless RootsUseSkillAttack", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage"]]])]
+mindlessRootsAnimUseSkillName = ["Mindless RootsUseSkillAttack"]
+mindlessRootsAnimUseSkillList = [AnimData("Mindless RootsUseSkillAttack", [["replaceImage", "frame1", 210, ["useTrait"]], ["replaceImage", "frame2", 1440, ["damage"]]])]
 
-mindlessRootsAnimName = mindlessRootsAnimUseSkillName
-mindlessRootsAnimList = mindlessRootsAnimUseSkillList
+mindlessRootsAnimUseTraitName = ["Mindless RootsUseTraitEnroaching Roots startOfTurn"]
+mindlessRootsAnimUseTraitList = [AnimData("Mindless RootsUseTraitEnroaching Roots startOfTurn", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["AOE", "buff"]]])]
+
+mindlessRootsAnimName = mindlessRootsAnimUseSkillName + mindlessRootsAnimUseTraitName
+mindlessRootsAnimList = mindlessRootsAnimUseSkillList + mindlessRootsAnimUseTraitList
 
 plantAnimName =\
 mindlessRootsAnimName
@@ -171,13 +196,18 @@ plantAnimList =\
 mindlessRootsAnimList
 
 obeliskAnimUseSkillName = ["ObeliskUseSkillThe Calling"]
-obeliskAnimUseSkillList = ["ObeliskUseSkillThe Calling", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["AOE", "damage"]]]]
+obeliskAnimUseSkillList = [AnimData("ObeliskUseSkillThe Calling", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["AOE", "damage"]]])]
 
-obeliskAnimName = obeliskAnimUseSkillName
-obeliskAnimList = obeliskAnimUseSkillList
+obeliskAnimUseTraitName =\
+["ObeliskUseTraitFaith-fueled onTrigger"]
+obeliskAnimUseTraitList =\
+[AnimData("ObeliskUseTraitFaith-fueled onTrigger", [["replaceImage", "frame1", 210, ["useTrait"]], ["replaceImage", "frame2", 1440, ["useSkill"]]])]
+
+obeliskAnimName = obeliskAnimUseSkillName + obeliskAnimUseTraitName
+obeliskAnimList = obeliskAnimUseSkillList + obeliskAnimUseTraitList
 
 cultistAnimUseSkillName = ["CultistUseSkillPrayer"]
-cultistAnimUseSkillList = ["CultistUseSkillPrayer", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["pray"]]]]
+cultistAnimUseSkillList = [AnimData("CultistUseSkillPrayer", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["pray"]]])]
 
 cultistAnimName = cultistAnimUseSkillName
 cultistAnimList = cultistAnimUseSkillList

@@ -1,8 +1,8 @@
 {
     "party": [
         {
-            "id": "Dissector",
-            "classId": "Dissector",
+            "id": "Pirate",
+            "classId": "Pirate",
             "hp": 100,
             "maxhp": 100,
             "juice": 100,
@@ -12,21 +12,15 @@
             "speed": 6,
             "counter": 0,
             "specialStats": [],
-            "traits": [],
-            "skills": [
+            "traits": [
                 [
-                    "Bloody Jabs",
+                    "Plunderer",
                     0
                 ]
             ],
-            "status": [
-                [
-                    "BLEED", 
-                    10,
-                    "",
-                    ""
-                ]
+            "skills": [
             ],
+            "status": [],
             "equipment": [],
             "equipmentSlots": 2,
             "attackText": "user does some on-site practice!",

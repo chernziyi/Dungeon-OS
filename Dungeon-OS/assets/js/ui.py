@@ -250,7 +250,7 @@ def animLoad(animName, info, div, frame, self, targets, AOE, matesList, notMates
         animKeyFrames.append([animName, carrier])
 
 def animlocateFrame(animName, keyframe):
-    print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
+    #print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
     anim = None
     for i in animKeyFrames:
         if i[0] == animName and keyframe in i[1]:
@@ -266,6 +266,18 @@ def animlocateFrame(animName, keyframe):
         if idk == False:
             return None
     else:
+        return None
+
+def animlocateName(frame, keyframe):
+    idk = False
+    for i in animQueue[frame]:
+        if i in animStorage:
+            if keyframe in animKeyFrames[animStorage.index(i)][1]:
+                idk = True
+                return(animKeyFrames[animStorage.index(i)][0])
+                break
+
+    if idk == False:
         return None
 
 def animSwapTarget(anim, newTarget, animType):
