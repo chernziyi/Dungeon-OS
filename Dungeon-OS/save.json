@@ -1,24 +1,28 @@
 {
     "party": [
         {
-            "id": "Pirate",
-            "classId": "Pirate",
+            "id": "HyperMuffin",
+            "classId": "Shaman",
             "hp": 100,
             "maxhp": 100,
             "juice": 100,
             "maxjuice": 100,
-            "strength": 5,
+            "strength": 2,
             "defense": 3,
             "speed": 6,
             "counter": 0,
             "specialStats": [],
             "traits": [
                 [
-                    "Plunderer",
+                    "Healing Prayer",
                     0
                 ]
             ],
             "skills": [
+                [
+                    "Bolt",
+                    0
+                ]
             ],
             "status": [],
             "equipment": [],

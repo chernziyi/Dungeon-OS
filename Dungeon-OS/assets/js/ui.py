@@ -22,6 +22,9 @@ animEnded = True
 
 highestZ = 1
 
+def indexLast(list, item):
+    return len(list) - 1 - list[::-1].index(item)
+
 def clearDiv(div):
     document.getElementById(div).innerHTML = ""
 
@@ -250,19 +253,18 @@ def animLoad(animName, info, div, frame, self, targets, AOE, matesList, notMates
         animKeyFrames.append([animName, carrier])
 
 def animlocateFrame(animName, keyframe):
-    #print("info", animKeyFrames, animStorage, animQueue, animName, keyframe)
+    #print(animKeyFrames, animName, keyframe)
     anim = None
-    for i in animKeyFrames:
-        if i[0] == animName and keyframe in i[1]:
-            anim = animStorage[animKeyFrames.index(i)]
-            break
+    targetKeyframeId = next((i for i, x in reversed(list(enumerate(animKeyFrames))) if x[0] == animName and keyframe in x[1]), None)
+    if not (targetKeyframeId == None):
+        anim = animStorage[targetKeyframeId]
     idk = False
     if anim:
         for i in animQueue:
             for j in i:
                 if j == anim:
                     idk = True
-                    return animQueue.index(i)
+                    return indexLast(animQueue, i)
         if idk == False:
             return None
     else:
@@ -279,9 +281,6 @@ def animlocateName(frame, keyframe):
 
     if idk == False:
         return None
-
-def animSwapTarget(anim, newTarget, animType):
-    print("hi")
 
 def animSeekAndDestroy(animName, keyframe):
     global animKeyFrames
@@ -592,6 +591,25 @@ def generateStatusWindow(subject, faction):
     screen.appendChild(statWindow)
 
     addText(statWindow, "physStats", f"PHYSICAL STATS: STR: {subject.strength} DEF: {subject.defense} SPD: {subject.speed}")
+    addText(statWindow, "specialStats", f"SPECIAL STATS: {' '.join([f'{s[0]}: {s[1]}' for s in subject.specialStats])}")
+    texts = []
+    for i in subject.status:
+        if i[2] == "" or "None":
+            texts.append("".join(f"{i[0]} ({i[1]})"))
+        else:
+            texts.append("".join(f"{i[0]} ({i[1]}), {i[2]} TURNS"))
+    text = ",".join(texts)
+    addText(statWindow, "status", f"STATUS: {text}")
+    texts = []
+    for i in subject.skills:
+        texts.append(i[0])
+    addText(statWindow, "skills", f"SKILLS: {", ".join(texts)}")
+    texts = []
+    for i in subject.traits:
+        texts.append(i[0])
+    if faction == "player":
+        addText(statWindow, "equipment", f"EQUIPMENT({len(subject.equipment)}/{subject.equipmentSlots}): {", ".join(subject.equipment)}")
+
     for i in ["STR", "DEF", "SPD"]:
         keywordInfo = keywordList[keywordName.index(i)]
 
@@ -608,7 +626,6 @@ def generateStatusWindow(subject, faction):
 
         addDescription(statWindow.querySelector("#physStats"), i, placeholder)
 
-    addText(statWindow, "specialStats", f"SPECIAL STATS: {' '.join([f'{s[0]}: {s[1]}' for s in subject.specialStats])}")
     for i in range(len(subject.specialStats)):
         keywordInfo = keywordList[keywordName.index(subject.specialStats[i][0])]
 
@@ -629,15 +646,6 @@ def generateStatusWindow(subject, faction):
 
         addDescription(statWindow.querySelector("#specialStats"), subject.specialStats[i][0], placeholder)
 
-    texts = []
-    for i in subject.status:
-        if i[2] == "" or "None":
-            texts.append("".join(f"{i[0]} ({i[1]})"))
-        else:
-            texts.append("".join(f"{i[0]} ({i[1]}), {i[2]} TURNS"))
-    text = ",".join(texts)
-
-    addText(statWindow, "status", f"STATUS: {text}")
     for i in range(len(subject.status)):
         if subject.status[i][0] in keywordName:
             try:
@@ -662,10 +670,6 @@ def generateStatusWindow(subject, faction):
             except Exception as e:
                 placeholder_counter += 0
 
-    texts = []
-    for i in subject.traits:
-        texts.append(i[0])
-
     addText(statWindow, "traits", f"TRAITS: {", ".join(texts)}")
     for i in subject.traits:
         traitInfo = traitList[traitName.index(i[0])]
@@ -685,11 +689,6 @@ def generateStatusWindow(subject, faction):
 
         addDescription(statWindow.querySelector("#traits"), i[0], placeholder)
 
-    texts = []
-    for i in subject.skills:
-        texts.append(i[0])
-
-    addText(statWindow, "skills", f"SKILLS: {", ".join(texts)}")
     for i in subject.skills:
         skillInfo = skillList[skillName.index(i[0])]
 
@@ -713,7 +712,6 @@ def generateStatusWindow(subject, faction):
         addDescription(statWindow.querySelector("#skills"), i[0], placeholder)
     
     if faction == "player":
-        addText(statWindow, "equipment", f"EQUIPMENT({len(subject.equipment)}/{subject.equipmentSlots}): {", ".join(subject.equipment)}")
         for i in subject.equipment:
             itemInfo = itemList[itemName.index(i)]
 

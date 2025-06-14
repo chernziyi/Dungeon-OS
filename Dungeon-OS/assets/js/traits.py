@@ -57,7 +57,7 @@ TraitData("Conduit Of Faith", "", 0, [["conduit", True, True, False]],\
 pirateTraitName =\
 ["Plunderer"]
 pirateTraitList =\
-[TraitData("Plunderer", "", 0, [["onEnemyDeath", True, False, False, "loot", "coins", 5]],\
+[TraitData("Plunderer", "", 0, [["onEnemyDeath", False, False, False, "loot", "coins", 5]],\
 "Some extra gold for the road. How did they find it? Nobody knows!",\
 "When an enemy dies: Gain lootAmount coins.",
 [["onEnemyDeath", "user finds some coins from... somewhere..."]], 80, "")]
@@ -65,7 +65,7 @@ pirateTraitList =\
 dissectorTraitName =\
 ["Pharmacy", "Band-Aid Pro", "Fight Or Flight", "Sneaky Cuts", "Haemocollector"]
 dissectorTraitList =\
-[TraitData("Pharmacy", "", 0, [["onEnemyDeath", True, False, False, "loot", "potion", 1]],\
+[TraitData("Pharmacy", "", 0, [["onEnemyDeath", False, False, False, "loot", "potion", 1]],\
 "'What? I am a person of medicine, after all.",\
 "When an enemy dies: Gain lootAmount potion.",
 [["onEnemyDeath", "user concocts a vial from the remains!"]], 150, ""),
@@ -77,8 +77,7 @@ TraitData("Fight or Flight", "", 0, [["onHurt", True, False, False, "buffDuratio
 "People when they step on Legos:",\
 "When you are hurt: Gain spdAmount SPD for buffDuration turns.",
 [["onHurt", "user becomes stimulated!"]], 100, ""),
-TraitData("Sneaky Cuts", "usesPerTurn", 1, 
-[["onDamage", False, False, False, "damage", "fixed", 1, ""]], 
+TraitData("Sneaky Cuts", "usesPerTurn", 1, [["onDamage", False, False, False, "damage", "fixed", 1, ""]], 
 "Every strike brings a little extra pain.", 
 "When you deal damage: deal damageAmount damage. Uses Per Turn: secondaryNumber.",
 [["onDamage", "user slashes a little deeper!"]], 50, ""),
@@ -99,7 +98,7 @@ qiMasterTraitList =\
 ravenTraitName =\
 ["Acceleration"]
 ravenTraitList =\
-[TraitData("Acceleration", "", 0, [["startOfTurn", True, False, False, "buff", "spd", 1, "buffEnd"]],\
+[TraitData("Acceleration", "", 0, [["startOfTurn", True, False, False, "buffDuration", "", "buff", "spd", 1, "buffEnd"]],\
 "v = u + at",\
 "Start Of Turn: Gain spdAmount SPD.",
 [["startOfTurn", "user speeds up!"]], 150, "")]
@@ -107,7 +106,7 @@ ravenTraitList =\
 shamanTraitName =\
 ["Healing Prayer"]
 shamanTraitList =\
-[TraitData("Healing Prayer", "", 0, [["onChant", False, True, True, "heal", 3]],\
+[TraitData("Healing Prayer", "", 0, [["onChant", False, True, True, "heal", 3, ""]],\
 "The voice of Luna shall comfort the wounded.",\
 "On Chant: Heal all allies for healAmount.",
 [["onChant", "user's chant heals some wounds!"]], 80, "")]

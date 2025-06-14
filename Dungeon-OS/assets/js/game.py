@@ -416,8 +416,9 @@ def Loot(target, type):
                 updateCoins(target)
                 Narrate(f"You found {target} coins!")
             else:
-                if not target.lootTable[i][0] == "Nope" or "Coins":
+                if not (target.lootTable[i][0] == "Nope" or target.lootTable[i][0] == "Coins"):
                     itemInfo = itemList[itemName.index(target.lootTable[i][0])]
+                    print(itemInfo)
                     if itemInfo.type == type:
                         for j in range(target.lootTable[i][1]):
                             lootPool.append(target.lootTable[i][0])
@@ -478,15 +479,7 @@ async def Combat(nextTurn):
             else:
                 override = False
 
-                if overrideContext == "stillChanting":
-                    for i in range(len(combatant.traits)):
-                        traitInfo = traitList[traitName.index(combatant.traits[i][0])]
-                        for i in traitInfo.info:
-                            if i[0] == "onChant":
-                                traitEffect(combatant, combatant, traitInfo, i, "onChant")
-                    Narrate(f"{combatant.id} is still chanting!")
-
-                else:
+                if not overrideContext == "stillChanting":
                     if skillCondition == "chant":
                         Narrate(f"{combatant.id} finishes chanting!")
 
@@ -542,7 +535,6 @@ async def StartOfTurn(user):
         animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
 
         for i in animChart.info:
-            print(i)
             animLoad(currentAnimName, i, userDiv, animFrame, True, True, False, userMates, userNotMates)
             animFrame += 1
 
@@ -556,7 +548,11 @@ async def StartOfTurn(user):
             if j[0] == "startOfTurn":
                 traitEffect(user, user, traitInfo, j, "startOfTurn", effectFrame)
 
+
+    carrier = copy.deepcopy(user.status)
+
     for i in range(len(carrier)):
+        print(carrier[i])
         if carrier[i][0] == "BLEED":
             hurt(user, user, carrier[i][1], "bleedTrigger", currentAnimName)
             if next((s for s in user.status if s[0] == "HEMOTOXIN"), [0, 0, 0])[1] > 0:
@@ -565,7 +561,32 @@ async def StartOfTurn(user):
                 applyStatus(user, user, "BLEED", 0, math.ceil(carrier[i][1] * -0.5), "", "-", False, effectFrame)
         elif carrier[i][0] == "PLAGUE":
             applyStatus(user, user, "PLAGUE", 0, 1, "", "-", False, effectFrame)
-        elif not (carrier[i][2] == "" or "INFUSE"):
+        elif carrier[i][0] == "CHANT":
+            applyStatus(user, user, "CHANT", 0, 0, -1, "-", False, effectFrame)
+            if overrideContext == "stillChanting" and override:
+                if isinstance(user, PlayerData):
+                    currentAnimName = f"{user.classId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
+                elif isinstance(user, EnemyData):
+                    currentAnimName = f"{user.actualId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
+
+                animFrame = effectFrame + 1
+                if currentAnimName in animName:
+                    animChart = AnimData("", [])
+                    animChart = copy.deepcopy(animList[animName.index(currentAnimName)])
+
+                    for j in animChart.info:
+                        animLoad(currentAnimName, j, userDiv, animFrame, True, True, False, userMates, userNotMates)
+                        animFrame += 1
+                
+                chantFrame = animlocateFrame(currentAnimName, "chant")
+
+                for j in range(len(combatant.traits)):
+                    traitInfo = traitList[traitName.index(combatant.traits[j][0])]
+                    for k in traitInfo.info:
+                        if k[0] == "onChant":
+                            traitEffect(user, user, traitInfo, k, "onChant", chantFrame)
+
+        elif not (carrier[i][2] == "" or carrier[i][2] == "INFUSE"):
             applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False, effectFrame)
     
     animStart()
@@ -621,6 +642,7 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
             else:
                 currentAnimName = None
 
+        print(currentAnimName)
         if isinstance(user, PlayerData):
             mates = partyList + summonList
             notMates = enemyList
@@ -747,7 +769,7 @@ async def useSkill(user, faction, skill):
                     traitEffect(target, user, traitInfo, k, "onEnemyUseSkill")
 
 def skillEffect(user, target, skillInfo, AOE):
-    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, animFrame
+    global skillCondition, cantrip, cantripUsed, buffDuration, buffData, buffDataCollecting, animFrame, allEntities, allVisuals
 
     userMates = partyList + summonList if user in partyList or summonList else enemyList
     userNotMates = enemyList if user in partyList or summonList else partyList + summonList
@@ -760,10 +782,15 @@ def skillEffect(user, target, skillInfo, AOE):
     buffDataCollecting = False
     buffDuration = ""
 
+    print(allVisuals)
+    print(allEntities)
+
+    allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
+    allVisuals = [playerVisual1, playerVisual2, playerVisual3, playerVisual4, summonVisual1, summonVisual2, summonVisual3, summonVisual4,\
+    enemyVisual1, enemyVisual2, enemyVisual3, enemyVisual4]
+
     userVisual = allVisuals[allEntities.index(user)]
-    targetVisual = allVisuals[allEntities.index(target)]
     userDiv = document.getElementById(userVisual.id)
-    targetDiv = document.getElementById(targetVisual.id)
 
     if isinstance(user, PlayerData):
         currentAnimName = f"{user.classId}UseSkill{skillInfo.id}"
@@ -791,12 +818,17 @@ def skillEffect(user, target, skillInfo, AOE):
         currentAnimName = None
 
     
+    useSkillFrame = animlocateFrame(currentAnimName, "useSkill")
+    print(useSkillFrame)
+
     for i in range(len(user.traits)):
         traitInfo = copy.deepcopy(traitList[traitName.index(user.traits[i][0])])
         for j in traitInfo.info:
-            if [0] == "beforeSkillUse":
-                if j[4] == skillInfo.id or "any":
-                    traitEffect(user, target, traitInfo, j, "beforeSkillUse")
+            if j[0] == "beforeSkillUse":
+                if j[4] == skillInfo.id or j[4] == "any":
+                    print("skiibb")
+                    traitEffect(user, target, traitInfo, j, "beforeSkillUse", useSkillFrame - 1)
+                    useSkillFrame = animlocateFrame(currentAnimName, "useSkill")
 
     if AOE:
         voiceline(user, user, skillInfo.id, skillInfo.useText, skillCondition)
@@ -974,7 +1006,7 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                     traitInfo = traitList[traitName.index(user.traits[i][0])]
                     for j in traitInfo.info:
                         if j[0] == "onChant":
-                            traitEffect(user, user, traitInfo, j, "onChant")
+                            traitEffect(user, user, traitInfo, j, "onChant", currentFrame)
                 applyStatus(user, user, "CHANT", 0, 0, info[i + 1], name, False, currentFrame)
                 break
             else:
@@ -1123,10 +1155,8 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
                             traitEffect(user, target, trait, k, "onTrigger", currentFrame)
 
         if buffDataCollecting:
-            buffData.append(info[i])
-        
-        if info[i] in ["damage", "bleed"]:
-            animSeekAndDestroy(respectiveAnimName, info[i])
+            buffData.append(info[i])      
+        animSeekAndDestroy(respectiveAnimName, info[i])
 
 def updateInfo(info, startingNumber, total, target, user, name):
     for i in range(total):
@@ -1197,9 +1227,11 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
             if target.status[i][1] <= stacks:
                 statusStacksApplied = stacks
                 target.status[i][1] = stacks
-            if not target.status[i][2] == "" or "INFUSE":
+            if not (target.status[i][2] == "" or target.status[i][2] == "INFUSE"):
                 target.status[i][2] += duration
-            if target.status[i][1] <= 0 or (isinstance(target.status[i][2], int) and target.status[i][2] <= 0):
+                if target.status[i][2] <= 0:
+                    hitList.append(target.status[i][0])
+            if target.status[i][1] <= 0:
                 hitList.append(target.status[i][0])
             carrier = True
 
@@ -1210,7 +1242,7 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
     if replaceOriginal:
         next((s for s in target.status if s[0] == "CHANT"), [0, 0, 0, 0])[3] = text
 
-    if status == "CHANT" and duration < 0:
+    if status == "CHANT" and duration <= 0:
         override = True
         overrideContext = "stillChanting"
         skillCondition = "chant"
@@ -1222,6 +1254,7 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
 
     for i in range(len(hitList)):
         if hitList[i] == "CHANT":
+            print(target.status)
             override = True
             overrideContext = next((s for s in target.status if s[0] == "CHANT"), None)[3]
             skillCondition = "chant"
@@ -1234,18 +1267,20 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
             buffData = []
             buffDataCollecting = True
             skill = next((s for s in (skillList + traitList + itemList) if s.id == hitList[i]), None)
-            if skill:
-                buffer = (next((s for s in (partyList + enemyList + summonList) if s.id == next((s for s in target.status if s[0] == hitList[i]), [0, 0, 0, 0])[3]), None))
-                info = skill.info
-                if not next((s for s in target.status if s[0] == hitList[i]), [0, 0, 0, 0])[2] == "INFUSE":
-                    for j in range(len(info)):
-                        if info[j] == "buff":
-                            buffDataCollecting = True
-                        if info[j] == "buffEnd":
-                            buffDataCollecting = False
-                            Buff(buffer, target, hitList[i], buffData, -next((s for s in target.status if s[0] == hitList[i]), [0, 0, 0, 0])[1], False)
-                        if buffDataCollecting:
-                            buffData.append(info[j])
+            buffer = target
+            info = skill.info
+            if skill in traitList:
+                for j in skill.info:
+                    if "buff" in j:
+                        info = j
+            for j in range(len(info)):
+                if info[j] == "buff":
+                    buffDataCollecting = True
+                if info[j] == "buffEnd":
+                    buffDataCollecting = False
+                    Buff(buffer, target, hitList[i], buffData, -next((s for s in target.status if s[0] == hitList[i]), [0, 0, 0, 0])[1], False)
+                if buffDataCollecting:
+                    buffData.append(info[j])
         
         if hitList[i] not in unhitList:
             target.status.remove(next((s for s in target.status if s[0] == hitList[i]), None))
@@ -1361,13 +1396,13 @@ def hurt(user, target, damage, cause, respectiveAnimName=None):
             traitInfo = traitList[traitName.index(target.traits[i][0])]
             for j in traitInfo.info:
                 if j[0] == "onHurt":
-                    traitEffect(target, user, traitInfo, j, "onHurt")
+                    traitEffect(target, user, traitInfo, j, "onHurt", locatedFrame)
         for i in targetMates: 
             for j in range(len(i.traits)):
                 traitInfo = traitList[traitName.index(i.traits[j][0])]
                 for k in traitInfo.info:
                     if k[0] == "onAllyHurt":
-                        traitEffect(i, target, traitInfo, k, "onAllyHurt")
+                        traitEffect(i, target, traitInfo, k, "onAllyHurt", locatedFrame)
         if carrier > 1:
             if target.hp / target.maxhp <= carrier-1 / carrier:
                 difference = math.floor((target.maxhp - target.hp) / (target.maxhp / carrier))

@@ -27,7 +27,7 @@ AnimData("PirateUseSkillLay Low!", [["replaceImage", "frame1", 210, ["useSkill"]
 pirateAnimUseTraitName =\
 ["PirateUseTraitPlunderer onEnemyDeath"]
 pirateAnimUseTraitList =\
-[AnimData("PirateUseTraitPlunderer onEnemyDeath", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["loot"]]])]
+[AnimData("PirateUseTraitPlunderer onEnemyDeath", [["replaceImage", "arr", 210, ["useTrait"]], ["replaceImage", "rra", 1440, ["loot"]]])]
 
 pirateAnimMiscName =\
 ["PirateStartOfTurn", "PirateDeath", "PirateRebirth"]
@@ -56,6 +56,17 @@ AnimData("DissectorUseSkillMessy Healing", [["replaceImage", "frame1", 210, ["us
 AnimData("DissectorUseSkillTransplant", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 500, ["selfDamage"]],\
 ["replaceImage", "frame3", 500, ["heal"]]])]
 
+dissectorAnimUseTraitName =\
+["DissectorUseTraitPharmacy onEnemyDeath", "DissectorUseTraitBand-Aid Pro onAllyHurt", "DissectorUseTraitFlight Or Flight onHurt",\
+"DissectorUseTraitSneaky Cuts onDamage", "DissectorUseTraitHaemocollector onApplyStatus", "DissectorUseTraitHaemocollector onTrigger"]
+dissectorAnimUseTraitList =\
+[AnimData("DissectorUseTraitPharmacy onEnemyDeath", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["loot"]]]),\
+AnimData("DissectorUseTraitBand-Aid Pro onAllyHurt", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["heal"]]]),\
+AnimData("DissectorUseTraitFlight Or Flight onHurt", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["buff"]]]),\
+AnimData("DissectorUseTraitSneaky Cuts onDamage", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["damage"]]]),\
+AnimData("DissectorUseTraitHaemocollector onApplyStatus", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["triggerGain", "trigger"]]]),\
+AnimData("DissectorUseTraitHaemocollector onTrigger", [["replaceImage", "glubb", 210, ["useTrait"]], ["replaceImage", "glub glub", 1440, ["loot"]]])]
+
 dissectorAnimMiscName =\
 ["DissectorStartOfTurn", "DissectorDeath", "DissectorRebirth"]
 dissectorAnimMiscList =\
@@ -63,8 +74,8 @@ dissectorAnimMiscList =\
 AnimData("DissectoreDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
 AnimData("DissectorRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
-dissectorAnimName = dissectorAnimUseSkillName + dissectorAnimMiscName
-dissectorAnimList = dissectorAnimUseSkillList + dissectorAnimMiscList
+dissectorAnimName = dissectorAnimUseSkillName + dissectorAnimUseTraitName + dissectorAnimMiscName
+dissectorAnimList = dissectorAnimUseSkillList + dissectorAnimUseTraitList + dissectorAnimMiscList
 
 qiMasterAnimUseSkillName =\
 ["Qi MasterUseSkillAttack", "Qi MasterUseSkillCounter", "Qi MasterUseSkillCrimson Infusion", "Qi MasterUseSkillCobalt Infusion",\
@@ -76,6 +87,11 @@ AnimData("Qi MasterUseSkillCrimson Infusion", [["replaceImage", "frame1", 210, [
 AnimData("Qi MasterUseSkillCobalt Infusion", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1000, ["buff"]]]),\
 AnimData("Qi MasterUseSkillCobalt Infusion", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1000, ["counter"]]])]
 
+qiMasterAnimUseTraitName =\
+["Qi MasterUseTraitPunching Mastery beforeSkillUse"]
+qiMasterAnimUseTraitList =\
+[AnimData("Qi MasterUseTraitPunching Mastery beforeSkillUse", [["replaceImage", "kapew", 210, ["useTrait"]], ["replaceImage", "kapow", 1440, ["buff"]]])]
+
 qiMasterAnimMiscName =\
 ["Qi MasterStartOfTurn", "Qi MasterDeath", "Qi MasterRebirth"]
 qiMasterAnimMiscList =\
@@ -83,8 +99,8 @@ qiMasterAnimMiscList =\
 AnimData("Qi MasterDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
 AnimData("Qi MasterRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
-qiMasterAnimName = qiMasterAnimUseSkillName + qiMasterAnimMiscName
-qiMasterAnimList = qiMasterAnimUseSkillList + qiMasterAnimMiscList
+qiMasterAnimName = qiMasterAnimUseSkillName + qiMasterAnimUseTraitName + qiMasterAnimMiscName
+qiMasterAnimList = qiMasterAnimUseSkillList + qiMasterAnimUseTraitList + qiMasterAnimMiscList
 
 ravenAnimUseSkillName =\
 ["RavenUseSkillAttack", "RavenUseSkillVelocity", "RavenUseSkillRusty Graze", "RavenUseSkillBreadcrumbs"]
@@ -94,6 +110,11 @@ AnimData("RavenUseSkillVelocity", [["replaceImage", "frame1", 210, ["useSkill"]]
 AnimData("RavenUseSkillRusty Graze", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage", "plague"]]]),\
 AnimData("RavenUseSkillBreadcrumbs", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage", "summon"]]])]
 
+ravenAnimUseTraitName =\
+["RavenUseTraitAcceleration startOfTurn"]
+ravenAnimUseTraitList =\
+[AnimData("RavenUseTraitAcceleration startOfTurn", [["replaceImage", "zip", 210, ["useTrait"]], ["replaceImage", "fly", 1440, ["buff"]]])]
+
 ravenAnimMiscName =\
 ["RavenStartOfTurn", "RavenDeath", "RavenRebirth"]
 ravenAnimMiscList =\
@@ -102,9 +123,9 @@ AnimData("RavenDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
 AnimData("RavenRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 ravenAnimName =\
-ravenAnimUseSkillName + ravenAnimMiscName
+ravenAnimUseSkillName + ravenAnimUseTraitName + ravenAnimMiscName
 ravenAnimList =\
-ravenAnimUseSkillList + ravenAnimMiscList
+ravenAnimUseSkillList + ravenAnimUseTraitList + ravenAnimMiscList
 
 shamanAnimUseSkillName =\
 ["ShamanUseSkillAttack", "ShamanUseSkillBolt", "ShamanUseSkillBoltChanting", "ShamanUseSkillBoltSuccess", "ShamanUseSkillChilling Air",\
@@ -119,6 +140,11 @@ AnimData("ShamanUseSkillSlippery Sand", [["replaceImage", "frame1", 210, ["useSk
 AnimData("ShamanUseSkillSlippery SandChanting", [["replaceImage", "frame1", 1440, ["chant"]]]),\
 AnimData("ShamanUseSkillSlippery SandSuccess", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["summon"]]])]
 
+shamanAnimUseTraitName =\
+["ShamanUseTraitHealing Prayer onChant"]
+shamanAnimUseTraitList =\
+[AnimData("ShamanUseTraitHealing Prayer onChant", [["replaceImage", "alalala", 210, ["useTrait"]], ["replaceImage", "lalalal", 1440, ["AOE", "heal"]]])]
+
 shamanAnimMiscName =\
 ["ShamanStartOfTurn", "ShamanDeath", "ShamanRebirth"]
 shamanAnimMiscList =\
@@ -127,9 +153,9 @@ AnimData("ShamanDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
 AnimData("ShamanRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 shamanAnimName =\
-shamanAnimUseSkillName + shamanAnimMiscName
+shamanAnimUseSkillName + shamanAnimUseTraitName + shamanAnimMiscName
 shamanAnimList =\
-shamanAnimUseSkillList + shamanAnimMiscList
+shamanAnimUseSkillList + shamanAnimUseTraitList + shamanAnimMiscList
 
 bardAnimUseSkillName =\
 ["BardUseSkillAttack", "BardUseSkillFoul Language", "BardUseSkillLeer", "BardUseSkillFancy Feet"]
@@ -199,9 +225,10 @@ obeliskAnimUseSkillName = ["ObeliskUseSkillThe Calling"]
 obeliskAnimUseSkillList = [AnimData("ObeliskUseSkillThe Calling", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["AOE", "damage"]]])]
 
 obeliskAnimUseTraitName =\
-["ObeliskUseTraitFaith-fueled onTrigger"]
+["ObeliskUseTraitFaith-fueled onTrigger", "ObeliskUseTraitFaith-fueled onGainStatus"]
 obeliskAnimUseTraitList =\
-[AnimData("ObeliskUseTraitFaith-fueled onTrigger", [["replaceImage", "frame1", 210, ["useTrait"]], ["replaceImage", "frame2", 1440, ["useSkill"]]])]
+[AnimData("ObeliskUseTraitFaith-fueled onTrigger", [["replaceImage", "frame1", 210, ["useTrait"]], ["replaceImage", "frame2", 1440, ["useSkill"]]]),\
+AnimData("ObeliskUseTraitFaith-fueled onGainStatus", [["replaceImage", "frame1", 210, ["useTrait"]], ["replaceImage", "frame2", 1440, ["trigger"]]])]
 
 obeliskAnimName = obeliskAnimUseSkillName + obeliskAnimUseTraitName
 obeliskAnimList = obeliskAnimUseSkillList + obeliskAnimUseTraitList
