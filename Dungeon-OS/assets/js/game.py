@@ -156,8 +156,11 @@ def addCharacter(idk):
     player.load_from(idk)
     partyList.append(player)
 
-    playerVisual = allVisuals[allEntities.index(player)]
-    playerVisual.load_from(player)
+    originalVisual = allVisuals[allEntities.index(party[partyNumber])]
+    playerVisual = copy.deepcopy(originalVisual)
+    playerVisual.load_from(idk)
+
+    allVisuals[allEntities.index(party[partyNumber])] = copy.deepcopy(playerVisual)
 
     generateWindow(playerVisual, "player", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
     screen = document.getElementById(player.id)
@@ -204,7 +207,8 @@ def addEnemy(idk):
     
     if not swarm:
         enemyVisual = allVisuals[allEntities.index(enemy)]
-        enemyVisual.load_from(enemy)
+        enemyVisual.load_from(enemyData)
+        enemyVisual = copy.deepcopy(enemyVisual)
         generateWindow(enemyVisual, "enemy", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
         screen = document.getElementById(enemy.id)
         def addStatus():
@@ -258,7 +262,8 @@ def addSummon(summoner, idk, frame):
     
     if not swarm:
         summonVisual = allVisuals[allEntities.index(summon)]
-        summonVisual.load_from(summon)
+        summonVisual.load_from(summonData)
+        summonVisual = copy.deepcopy(summonVisual)
         generateWindow(summonVisual, "summon", callbackUse=useItem, callbackGetTarget=getTargetFromDiv)
         screen = document.getElementById(summon.id)
         def addStatus():
@@ -477,6 +482,7 @@ async def Combat(nextTurn):
                         elif combatant in summonList:
                             await useSkill(combatant, "summon", combatant.intent)
             else:
+                print("hi")
                 override = False
 
                 if not overrideContext == "stillChanting":
@@ -552,7 +558,6 @@ async def StartOfTurn(user):
     carrier = copy.deepcopy(user.status)
 
     for i in range(len(carrier)):
-        print(carrier[i])
         if carrier[i][0] == "BLEED":
             hurt(user, user, carrier[i][1], "bleedTrigger", currentAnimName)
             if next((s for s in user.status if s[0] == "HEMOTOXIN"), [0, 0, 0])[1] > 0:
@@ -562,13 +567,12 @@ async def StartOfTurn(user):
         elif carrier[i][0] == "PLAGUE":
             applyStatus(user, user, "PLAGUE", 0, 1, "", "-", False, effectFrame)
         elif carrier[i][0] == "CHANT":
+            if isinstance(user, PlayerData):
+                currentAnimName = f"{user.classId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
+            elif isinstance(user, EnemyData):
+                currentAnimName = f"{user.actualId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
             applyStatus(user, user, "CHANT", 0, 0, -1, "-", False, effectFrame)
-            if overrideContext == "stillChanting" and override:
-                if isinstance(user, PlayerData):
-                    currentAnimName = f"{user.classId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
-                elif isinstance(user, EnemyData):
-                    currentAnimName = f"{user.actualId}UseSkill{next((s for s in user.status if s[0] == f"CHANT"), [0, 0, 0, 0])[3]}Chanting"
-
+            if skillCondition == "chant" and override:
                 animFrame = effectFrame + 1
                 if currentAnimName in animName:
                     animChart = AnimData("", [])
@@ -584,10 +588,11 @@ async def StartOfTurn(user):
                     traitInfo = traitList[traitName.index(combatant.traits[j][0])]
                     for k in traitInfo.info:
                         if k[0] == "onChant":
+                            print("WOLOLO")
                             traitEffect(user, user, traitInfo, k, "onChant", chantFrame)
 
         elif not (carrier[i][2] == "" or carrier[i][2] == "INFUSE"):
-            applyStatus(user, user, carrier[i][0], 0, 0, -1, "-", False, effectFrame)
+            applyStatus(user, user, carrier[i][0], 0, -1, 0, "-", False, effectFrame)
     
     animStart()
     await WaitForAnimFinished()
@@ -599,7 +604,7 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
     targetMates = partyList + summonList if target in partyList or summonList else enemyList
     targetNotMates = enemyList if target in partyList or summonList else partyList + summonList
 
-    if insertedFrame:
+    if isinstance(insertedFrame, int):
         animFrame = insertedFrame + 1
     trait = copy.deepcopy(actualTrait)
     traitInfo = copy.deepcopy(actualTraitInfo)
@@ -625,11 +630,11 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
         notMates = []
         targets = []
 
-        if insertedFrame:
+        if isinstance(insertedFrame, int):
             if isinstance(user, PlayerData):
                 currentAnimName = f"{user.classId}UseTrait{trait.id} {traitCondition}"
             elif isinstance(user, EnemyData):
-                currentAnimName = f"{user.actualId}UseTrait{trait.id} {traitCondition}"
+                currentAnimName = f"{user.actualId}UseTrait{trait.id} {traitCondition}"      
             
             if currentAnimName in animName:
                 animChart = AnimData("", [])
@@ -642,7 +647,6 @@ def traitEffect(user, target, actualTrait, actualTraitInfo, traitCondition, inse
             else:
                 currentAnimName = None
 
-        print(currentAnimName)
         if isinstance(user, PlayerData):
             mates = partyList + summonList
             notMates = enemyList
@@ -782,13 +786,6 @@ def skillEffect(user, target, skillInfo, AOE):
     buffDataCollecting = False
     buffDuration = ""
 
-    print(allVisuals)
-    print(allEntities)
-
-    allEntities = [player1, player2, player3, player4, summon1, summon2, summon3, summon4, enemy1, enemy2, enemy3, enemy4]
-    allVisuals = [playerVisual1, playerVisual2, playerVisual3, playerVisual4, summonVisual1, summonVisual2, summonVisual3, summonVisual4,\
-    enemyVisual1, enemyVisual2, enemyVisual3, enemyVisual4]
-
     userVisual = allVisuals[allEntities.index(user)]
     userDiv = document.getElementById(userVisual.id)
 
@@ -819,14 +816,12 @@ def skillEffect(user, target, skillInfo, AOE):
 
     
     useSkillFrame = animlocateFrame(currentAnimName, "useSkill")
-    print(useSkillFrame)
 
     for i in range(len(user.traits)):
         traitInfo = copy.deepcopy(traitList[traitName.index(user.traits[i][0])])
         for j in traitInfo.info:
             if j[0] == "beforeSkillUse":
                 if j[4] == skillInfo.id or j[4] == "any":
-                    print("skiibb")
                     traitEffect(user, target, traitInfo, j, "beforeSkillUse", useSkillFrame - 1)
                     useSkillFrame = animlocateFrame(currentAnimName, "useSkill")
 
@@ -835,28 +830,45 @@ def skillEffect(user, target, skillInfo, AOE):
     else:
         voiceline(user, target, skillInfo.id, skillInfo.useText, skillCondition)
 
-    for times in range(skillInfo.multi):
-        if AOE:
-            for i in range(len(target)):
-                dodge = next((s for s in target[i].specialStats if s[0] == "DODGE"), [0, 0, 0])[1]
+    useSkillFrame = animlocateFrame(currentAnimName, "useSkill")
+    print("ada", currentAnimName, useSkillFrame)
+
+    if skillCondition == "chant" or skillInfo.chant == 0:
+        for times in range(skillInfo.multi):
+            if AOE:
+                for i in range(len(target)):
+                    dodge = next((s for s in target[i].specialStats if s[0] == "DODGE"), [0, 0, 0])[1]
+                    accuracy = random.uniform(0, 1) + skillInfo.acc + (next((s for s in user.specialStats if s[0] == "ACCURACY"), [0, 0, 0])[1]) - dodge
+                    if accuracy >= 1:
+                        Effect(user, target[i], skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)  
+                    else:
+                        Narrate(f"{user.id} missed!")
+                        for i in range(len(target.traits)):
+                            traitInfo = traitList[traitName.index(target.traits[i][0])]
+                            for i in traitInfo.info:
+                                if i[0] == "onEnemyMiss":
+                                    traitEffect(target, user, traitInfo, i, "onEnemyMiss", useSkillFrame)
+
+            else:
+                dodge = next((s for s in target.specialStats if s[0] == "DODGE"), [0, 0, 0])[1]
                 accuracy = random.uniform(0, 1) + skillInfo.acc + (next((s for s in user.specialStats if s[0] == "ACCURACY"), [0, 0, 0])[1]) - dodge
                 if accuracy >= 1:
-                    Effect(user, target[i], skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)  
+                    Effect(user, target, skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)         
                 else:
                     Narrate(f"{user.id} missed!")
                     for i in range(len(target.traits)):
                         traitInfo = traitList[traitName.index(target.traits[i][0])]
                         for i in traitInfo.info:
                             if i[0] == "onEnemyMiss":
-                                traitEffect(user, target, traitInfo, i, "onEnemyMiss")
-
-        else:
-            dodge = next((s for s in target.specialStats if s[0] == "dodge"), [0, 0, 0])[1]
-            accuracy = random.uniform(0, 1) + skillInfo.acc + (next((s for s in user.specialStats if s[0] == "ACCURACY"), [0, 0, 0])[1]) - dodge
-            if accuracy >= 1:
-                Effect(user, target, skillInfo.id, skillInfo.info, skillInfo.juiceCost, respectiveAnimName=currentAnimName)         
-            else:
-                Narrate(f"{user.id} missed!")
+                                traitEffect(target, user, traitInfo, i, "onEnemyMiss", useSkillFrame)
+    else:
+        locatedFrame = animlocateFrame(currentAnimName, "chant")
+        for i in range(len(user.traits)):
+            traitInfo = traitList[traitName.index(user.traits[i][0])]
+            for j in traitInfo.info:
+                if j[0] == "onChant":
+                    traitEffect(user, user, traitInfo, j, "onChant", locatedFrame)
+        applyStatus(user, user, "CHANT", skillInfo.chant, 0, 0, skillInfo.id, False, locatedFrame)
     
     animStart()
 
@@ -999,18 +1011,6 @@ def Effect(user, target, name, info, cost, respectiveAnimName=None):
             applyStatus(user, user, "AMMO", 0, info[i + 1], "", "-", False, currentFrame)
         if info[i] == "reload":
             Reload(user)
-        if info[i] == "chant":
-            info = updateInfo(info, i, 2, target, user, name)
-            if skillCondition != "chant":
-                for i in range(len(user.traits)):
-                    traitInfo = traitList[traitName.index(user.traits[i][0])]
-                    for j in traitInfo.info:
-                        if j[0] == "onChant":
-                            traitEffect(user, user, traitInfo, j, "onChant", currentFrame)
-                applyStatus(user, user, "CHANT", 0, 0, info[i + 1], name, False, currentFrame)
-                break
-            else:
-                skillCondition = "-"
         if info[i] == "summon":
             addSummon(user, info[i + 1], currentFrame)
         if info[i] == "drunk":
@@ -1208,12 +1208,9 @@ def Buff(user, target, buffName, buffData, buffStacks, buffStatus):
             applyStatus(user, target, buffName, 0, buffStacks, buffDuration, user.id, False)
 
 def applyStatus(user, target, status, stacks, stacksChange, duration, text, replaceOriginal, frame=None):
-    global override, overrideContext, skillCondition, buffDataCollecting, statusStacksApplied
+    global override, overrideContext, skillCondition, buffDataCollecting, statusStacksApplied, allVisuals, allEntities
 
-    userVisual = allVisuals[allEntities.index(user)]
     targetVisual = allVisuals[allEntities.index(target)]
-    userDiv = document.getElementById(userVisual.id)
-    targetDiv = document.getElementById(targetVisual.id)
 
     statusBefore = copy.deepcopy(target.status)
     carrier = False
@@ -1227,18 +1224,19 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
             if target.status[i][1] <= stacks:
                 statusStacksApplied = stacks
                 target.status[i][1] = stacks
+
             if not (target.status[i][2] == "" or target.status[i][2] == "INFUSE"):
                 target.status[i][2] += duration
                 if target.status[i][2] <= 0:
                     hitList.append(target.status[i][0])
-            if target.status[i][1] <= 0:
+            elif target.status[i][1] <= 0:
                 hitList.append(target.status[i][0])
             carrier = True
 
     if not carrier:
         statusStacksApplied = stacks + stacksChange
         target.status.append([status, stacks + stacksChange, duration, text])
-    
+
     if replaceOriginal:
         next((s for s in target.status if s[0] == "CHANT"), [0, 0, 0, 0])[3] = text
 
@@ -1254,7 +1252,6 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
 
     for i in range(len(hitList)):
         if hitList[i] == "CHANT":
-            print(target.status)
             override = True
             overrideContext = next((s for s in target.status if s[0] == "CHANT"), None)[3]
             skillCondition = "chant"
@@ -1290,7 +1287,10 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
         applyStats(user, target, "ACCURACY", -0.25 * stacksChange)
 
     statusAfter = copy.deepcopy(target.status)
-    if frame:
+    
+    print("frame: ", frame)
+    if isinstance(frame, int):
+        print("hoi", statusBefore, statusAfter)
         for i in statusBefore:
             carrier = next((s for s in statusAfter if s[0] == i[0]), None)
             if carrier:

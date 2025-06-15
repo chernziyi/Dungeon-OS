@@ -2,7 +2,7 @@
     "party": [
         {
             "id": "HyperMuffin",
-            "classId": "Shaman",
+            "classId": "Bard",
             "hp": 100,
             "maxhp": 100,
             "juice": 100,
@@ -14,13 +14,13 @@
             "specialStats": [],
             "traits": [
                 [
-                    "Healing Prayer",
+                    "Dancer",
                     0
                 ]
             ],
             "skills": [
                 [
-                    "Bolt",
+                    "Fancy Feet",
                     0
                 ]
             ],

@@ -411,23 +411,24 @@ def updateStatusChange(target, original, new):
         statusDiv = characterDiv.querySelector("#statusEffects")
         grid = statusDiv.querySelector("#statusGrid")
         iconDiv = statusDiv.querySelector(f"#{new[0]}")
-        image = iconDiv.querySelector(f"#image")
-        stacks = iconDiv.querySelector(f"#stacks")
+        if iconDiv:
+            image = iconDiv.querySelector(f"#image")
+            stacks = iconDiv.querySelector(f"#stacks")
 
-        keywordInfo = keywordList[keywordName.index(new[0])]
+            keywordInfo = keywordList[keywordName.index(new[0])]
 
-        if isinstance(new[1], int):
-            if len(keywordInfo.icon) == 1:
-                image.src = keywordInfo.icon[0]
-            else:
-                if keywordInfo.iconCriteria == "stacks":
-                    if new[1] >= len(keywordInfo.icon):
-                        image.src = keywordInfo.icon[len(keywordInfo.icon) - 1]
-                    else:
-                        image.src = keywordInfo.icon[new[1] - 1]
-            if stacks:
-                stacks.textContent = new[1]
-        grid.append(iconDiv)
+            if isinstance(new[1], int):
+                if len(keywordInfo.icon) == 1:
+                    image.src = keywordInfo.icon[0]
+                else:
+                    if keywordInfo.iconCriteria == "stacks":
+                        if new[1] >= len(keywordInfo.icon):
+                            image.src = keywordInfo.icon[len(keywordInfo.icon) - 1]
+                        else:
+                            image.src = keywordInfo.icon[new[1] - 1]
+                if stacks:
+                    stacks.textContent = new[1]
+            grid.append(iconDiv)
         setTimeout(create_proxy(lambda: done()), 0)
     return anim
 

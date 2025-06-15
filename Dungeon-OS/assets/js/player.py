@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Tuple
 from typing import List
 
@@ -6,33 +6,35 @@ from skills import SkillData, pirateSkillList, dissectorSkillList, ravenSkillLis
 
 @dataclass
 class PlayerData:
-    id: str
-    classId: str
-    hp: int
-    maxhp: int
-    juice: int
-    maxjuice: int
-    strength: int
-    defense: int
-    speed: int
-    counter: float
-    specialStats: Tuple[str]
-    traits: Tuple[str]
-    skills: Tuple[str]
-    status: Tuple
-    equipment: Tuple[str]
-    equipmentSlots: int
-    attackText: str
-    alive: bool
+    id: str = ""
+    classId: str = ""
+    hp: int = 0
+    maxhp: int = 0
+    juice: int = 0
+    maxjuice: int = 0
+    strength: int = 0
+    defense: int = 0
+    speed: int = 0
+    counter: float = 0.0
+    specialStats: Tuple[str, ...] = field(default_factory=tuple)
+    traits: Tuple[str, ...] = field(default_factory=tuple)
+    skills: Tuple[str, ...] = field(default_factory=tuple)
+    status: Tuple = field(default_factory=tuple)
+    equipment: Tuple[str, ...] = field(default_factory=tuple)
+    equipmentSlots: int = 0
+    attackText: str = ""
+    alive: bool = True
+
     def load_from(self, other: "PlayerData"):
         self.__dict__.update(other.__dict__)
 
 @dataclass
 class ClassData:
-    id: str
-    desc: str
-    stats: PlayerData
-    skillList: List[SkillData]
+    id: str = ""
+    desc: str = ""
+    stats: PlayerData = field(default_factory=PlayerData)
+    skillList: List["SkillData"] = field(default_factory=list)
+
     def load_from(self, other: "ClassData"):
         self.__dict__.update(other.__dict__)
                     

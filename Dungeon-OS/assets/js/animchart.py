@@ -165,6 +165,11 @@ AnimData("BardUseSkillFoul Language", [["replaceImage", "frame1", 210, ["useSkil
 AnimData("BardUseSkillLeer", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["buff"]]]),\
 AnimData("BardUseSkillFancy Feet", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["buff"]]])]
 
+bardAnimUseTraitName =\
+["BardUseTraitDancer onEnemyMiss"]
+bardAnimUseTraitList =\
+[AnimData("BardUseTraitDancer onEnemyMiss", [["replaceImage", "heeheeheeha", 210, ["useTrait"]], ["replaceImage", "hahahahee", 1440, ["damage"]]])]
+
 bardAnimMiscName =\
 ["BardStartOfTurn", "BardDeath", "BardRebirth"]
 bardAnimMiscList =\
@@ -173,9 +178,9 @@ AnimData("BardDeath", [["replaceImage", "frame1", 210, ["death"]]]),\
 AnimData("BardRebirth", [["replaceImage", "frame1", 210, ["rebirth"]]])]
 
 bardAnimName =\
-bardAnimUseSkillName + bardAnimMiscName
+bardAnimUseSkillName + bardAnimUseTraitName + bardAnimMiscName
 bardAnimList =\
-bardAnimUseSkillList + bardAnimMiscList
+bardAnimUseSkillList + bardAnimUseTraitList + bardAnimMiscList
 
 honeybeeAnimUseSkillName =\
 ["HoneybeeUseSkillAttack", "HoneybeeUseSkillKamikaze"]
