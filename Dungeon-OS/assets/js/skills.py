@@ -6,7 +6,7 @@ class SkillData:
     id: str
     juiceCost: int
     chant: int
-    targets: bool #True if the skill targets your mates, #False if otherwise
+    targets: bool #True if the skill targets your mates, #False if otherwise. class: only buff those of your class
     self: bool #True if the skill targets yourself, #False if otherwise
     AOE: bool #True if AOE, False if otherwise
     randomTargets: bool
@@ -77,7 +77,7 @@ SkillData("Prayer", 20, 0, False, True, False, False, 1, 100, ["pray", 10],\
 [["-", "user mutters the holy texts!"]], 0, "")]
 
 pirateSkillName =\
-["Pistol Shot", "Cannon Call", "Drinks Up!", "Lay Low"]
+["Pistol Shot", "Cannon Call", "Drinks Up!", "Lay Low", "Additional Firepower"]
 pirateSkillList =\
 [SkillData("Pistol Shot", 10, 0, False, False, False, False, 1, 1.25, ["damage", "str", 4, 0.2, "ammo", -1],\
 "Gunfire is not to be taken lightly. Reloading Necessary.",\
@@ -94,7 +94,11 @@ SkillData("Drinks Up!", 5, 0, False, True, False, False, 1, 100, ["drunk", 1, 1,
 SkillData("Lay Low", 15, 0, False, True, False, False, 1, 100, ["stealth", 1],\
 "The must-take lesson for any Pirate: How to not get caught",\
 "Gain STEALTH stealthAmount",\
-[["-", "user lays low!"]], 50, "")]
+[["-", "user lays low!"]], 50, ""),\
+SkillData("Additional Firepower", 25, 0, "Pirate", False, True, False, 1, 100, ["buffDuration", "", "buff", "str", 2, "buffEnd"],\
+"That powder really hit the spot",\
+"You or your cannons gain strAmount strength.",\
+[["-", "user brings out the blackpowder!"]], 50, "")]
 
 dissectorSkillName =\
 ["Bloody Jabs", "Bandages", "Puncture", "Trade Blows", "Open Wound", "Messy Healing", "Transplant"]

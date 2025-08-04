@@ -14,7 +14,7 @@ class AnimData:
 
 pirateAnimUseSkillName =\
 ["PirateUseSkillAttack", "PirateUseSkillReload", "PirateUseSkillCannon Call", "PirateUseSkillCannon CallChanting", "PirateUseSkillCannon CallSuccess",\
-"PirateUseSkillDrinks Up!", "PirateUseSkillLay Low"]
+"PirateUseSkillDrinks Up!", "PirateUseSkillLay Low", "PirateUseSkillAdditional Firepower"]
 pirateAnimUseSkillList =\
 [AnimData("PirateUseSkillAttack", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1440, ["damage"]]]),\
 AnimData("PirateUseSkillReload", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 1000, ["reload"]]]),\
@@ -22,7 +22,8 @@ AnimData("PirateUseSkillCannon Call", [["replaceImage", "frame1", 210, ["useSkil
 AnimData("PirateUseSkillCannon CallChanting", [["replaceImage", "frame1", 210, ["chant"]]]),\
 AnimData("PirateUseSkillCannon CallSuccess", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["summon"]]]),\
 AnimData("PirateUseSkillDrinks Up!", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["drunk"]]]),
-AnimData("PirateUseSkillLay Low!", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["stealth"]]])]
+AnimData("PirateUseSkillLay Low!", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["stealth"]]]),
+AnimData("PirateUseSkillAdditional Firepower", [["replaceImage", "frame1", 210, ["useSkill"]], ["replaceImage", "frame2", 210, ["AOE", "buff"]]])]
 
 pirateAnimUseTraitName =\
 ["PirateUseTraitPlunderer onEnemyDeath"]

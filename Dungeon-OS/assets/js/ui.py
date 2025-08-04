@@ -2,6 +2,8 @@ from keywords import keywordName, keywordList
 from skills import skillName, skillList
 from traits import traitName, traitList
 from item import itemName, itemList
+from player import PlayerData, classes
+from enemy import EnemyData, classSummon
 
 from html import escape
 from js import document, requestAnimationFrame, window, setTimeout, setInterval, clearInterval
@@ -238,7 +240,17 @@ def animLoad(animName, info, div, frame, self, targets, AOE, matesList, notMates
     global animStorage, animKeyFrames
 
     if targets:
-        targetList = matesList
+        if isinstance(targets, str):
+            targetList = []
+            for i in matesList:
+                if isinstance(i, PlayerData):
+                    if i.classId == targets:
+                        targetList.append(i)
+                if isinstance(i, EnemyData):
+                    if i.id in classSummon[classes.index(skillInfo.targets)]:
+                        targetList.append(i)
+        else:
+            targetList = matesList
     else:
         targetList = notMatesList
 

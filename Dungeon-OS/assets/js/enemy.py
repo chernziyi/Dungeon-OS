@@ -103,3 +103,5 @@ ShamanSummonStats =\
 
 enemyName = BeeName + PlantName + GoldbotName + CultName + OozeName + PirateSummonName + RavenSummonName + ShamanSummonName
 enemyStats = BeeStats + PlantStats + GoldbotStats + CultStats + OozeStats + PirateSummonStats + RavenSummonStats + ShamanSummonStats
+
+classSummon = [PirateSummonName, [], [], RavenSummonName, ShamanSummonName, []]

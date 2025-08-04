@@ -3,7 +3,7 @@ setPosition, choose, Notification, addText, addDescriptionToImage, makeIconDragg
 generateShopWindow, effectNumber, animlocateFrame, animlocateName, animAdd, animStart, animLoad, updateHp, updateJuice, animSeekAndDestroy,\
 WaitForAnimFinished, updateStatusAdd, updateStatusChange, updateStatusRemove
 from player import PlayerData, classes, classList
-from enemy import EnemyData, enemyStats, enemyName
+from enemy import EnemyData, enemyStats, enemyName, classSummon
 from level import LevelData, combatZone1, combatZone0
 from skills import SkillData, skillName, skillList, pirateSkillList, dissectorSkillList, qiMasterSkillList,\
 ravenSkillList, shamanSkillList, bardSkillList
@@ -704,12 +704,22 @@ async def useSkill(user, faction, skill):
             if user.juice >= skillInfo.juiceCost or skillCondition == "chant" or not infusion:
                 targetablesNames = []
                 if skillInfo.targets:
-                    for i in range(len(partyList)):
-                        targetables.append(partyList[i])
-                        targetablesNames.append(partyList[i].id)
-                    for i in range(len(summonList)):
-                        targetables.append(summonList[i])
-                        targetablesNames.append(summonList[i].id)
+                    if isinstance(skillInfo.targets, str):
+                        for i in range(len(partyList)):
+                            if partyList[i].classId == skillInfo.targets:
+                                targetables.append(partyList[i])
+                                targetablesNames.append(partyList[i].id)
+                        for i in range(len(summonList)):
+                            if summonList[i].id in classSummon[classes.index(skillInfo.targets)]:
+                                targetables.append(summonList[i])
+                                targetablesNames.append(summonList[i].id)
+                    else:
+                        for i in range(len(partyList)):
+                            targetables.append(partyList[i])
+                            targetablesNames.append(partyList[i].id)
+                        for i in range(len(summonList)):
+                            targetables.append(summonList[i])
+                            targetablesNames.append(summonList[i].id)
                 else:
                     for i in range(len(enemyList)):
                         targetables.append(enemyList[i])
@@ -769,7 +779,7 @@ async def useSkill(user, faction, skill):
         for j in range(len(i.traits)):
             traitInfo = traitList[traitName.index(i.traits[j][0])]
             for k in traitInfo.info:
-                if k[0] == "onEnemyUseSkill" and skillInfo.targets == False:
+                if k[0] == "onEnemyUseSkill" and (not skillInfo.targets):
                     traitEffect(target, user, traitInfo, k, "onEnemyUseSkill")
 
 def skillEffect(user, target, skillInfo, AOE):
@@ -868,7 +878,7 @@ def skillEffect(user, target, skillInfo, AOE):
             for j in traitInfo.info:
                 if j[0] == "onChant":
                     traitEffect(user, user, traitInfo, j, "onChant", locatedFrame)
-        applyStatus(user, user, "CHANT", skillInfo.chant, 0, 0, skillInfo.id, False, locatedFrame)
+        applyStatus(user, user, "CHANT", 0, 0, skillInfo.chant, skillInfo.id, False, locatedFrame)
     
     animStart()
 
@@ -1225,12 +1235,15 @@ def applyStatus(user, target, status, stacks, stacksChange, duration, text, repl
                 statusStacksApplied = stacks
                 target.status[i][1] = stacks
 
-            if not (target.status[i][2] == "" or target.status[i][2] == "INFUSE"):
+            if (target.status[i][2] == "" or target.status[i][2] == "INFUSE"):
+                if target.status[i][1] <= 0:
+                    print("no stacks?")
+                    hitList.append(target.status[i][0])
+            else:
                 target.status[i][2] += duration
                 if target.status[i][2] <= 0:
+                    print("no time?")
                     hitList.append(target.status[i][0])
-            elif target.status[i][1] <= 0:
-                hitList.append(target.status[i][0])
             carrier = True
 
     if not carrier:

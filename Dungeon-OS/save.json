@@ -13,14 +13,14 @@
             "counter": 0,
             "specialStats": [],
             "traits": [
-                [
-                    "Dancer",
-                    0
-                ]
             ],
             "skills": [
                 [
-                    "Fancy Feet",
+                    "Cannon Call",
+                    0
+                ],
+                [
+                    "Additional Firepower",
                     0
                 ]
             ],
